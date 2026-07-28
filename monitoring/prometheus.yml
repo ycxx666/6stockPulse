@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "6stockpulse-api"
+    static_configs:
+      - targets: ["api:8900"]
+    metrics_path: /metrics
+
+  - job_name: "6stockpulse-worker"
+    static_configs:
+      - targets: ["worker:8901"]
+    metrics_path: /metrics

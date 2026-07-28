@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <title>6StockPulse · 全球量化资讯系统</title>
+  <style>
+    :root {
+      --bg: #040b14;
+      --panel: rgba(8, 23, 39, 0.92);
+      --panel-2: rgba(10, 29, 48, 0.88);
+      --panel-3: rgba(12, 34, 55, 0.72);
+      --line: rgba(77, 148, 190, 0.16);
+      --line-strong: rgba(53, 198, 231, 0.24);
+      --text: #e6f1f7;
+      --muted: #7391a4;
+      --muted-2: #4d687a;
+      --cyan: #28d7e7;
+      --green: #48e39a;
+      --red: #ff6677;
+      --orange: #ffac4b;
+      --yellow: #ffd54a;
+      --purple: #b98aff;
+      --blue: #5a95ff;
+      --shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      --radius: 14px;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --font-ui: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 22% -10%, rgba(31, 126, 170, 0.11), transparent 30%),
+        radial-gradient(circle at 75% 5%, rgba(10, 97, 133, 0.08), transparent 32%),
+        linear-gradient(180deg, #050c15 0%, #02070e 100%);
+      font-family: var(--font-ui);
+      overflow-x: hidden;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .app-shell {
+      min-width: 1440px;
+      min-height: 100vh;
+      border: 1px solid rgba(92, 153, 184, 0.15);
+      background: linear-gradient(180deg, rgba(3, 12, 22, 0.85), rgba(2, 8, 15, 0.95));
+    }
+
+    .window-strip {
+      height: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      color: #5c7180;
+      border-bottom: 1px solid rgba(84, 142, 171, 0.08);
+      background: rgba(2, 8, 14, 0.74);
+      font-size: 12px;
+    }
+    .window-dot { width: 10px; height: 10px; border-radius: 50%; background: #263541; }
+    .window-title { margin-left: 6px; font-size: 12px; font-weight: 600; }
+
+    .topbar {
+      height: 62px;
+      display: grid;
+      grid-template-columns: 360px minmax(650px, 1fr) 690px;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      border-bottom: 1px solid rgba(80, 151, 187, 0.11);
+      background: rgba(2, 11, 20, 0.9);
+    }
+
+    .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: grid; place-items: center;
+      color: var(--cyan);
+      background: radial-gradient(circle, rgba(38, 213, 229, 0.16), rgba(10, 28, 43, 0.3) 60%, transparent 61%);
+      filter: drop-shadow(0 0 13px rgba(38, 213, 229, 0.32));
+      font-size: 23px;
+    }
+    .brand-name { font-weight: 800; letter-spacing: 2.8px; font-size: 15px; white-space: nowrap; }
+    .brand-sub { margin-top: 4px; color: #556f81; font-size: 8px; letter-spacing: 4px; text-transform: uppercase; white-space: nowrap; }
+
+    .nav { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .nav-btn {
+      height: 32px; padding: 0 15px; border: 1px solid transparent; border-radius: 8px;
+      background: transparent; color: #718b9d; cursor: pointer; font-size: 12px; white-space: nowrap;
+    }
+    .nav-btn.active { color: #74f1ff; background: rgba(26, 152, 178, 0.12); border-color: rgba(44, 203, 225, 0.25); }
+    .badge-pro {
+      margin-left: 5px; padding: 1px 5px; border-radius: 5px; color: #f4ddff; font-size: 9px; font-weight: 800;
+      background: linear-gradient(135deg, #8b46e8, #b44cff);
+      box-shadow: 0 0 9px rgba(174, 73, 255, 0.25);
+    }
+    .badge-3d { background: linear-gradient(135deg, #4f8fff, #905bff); }
+
+    .tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+    .search {
+      width: 200px; height: 32px; display: flex; align-items: center; gap: 8px;
+      padding: 0 12px; border-radius: 16px; border: 1px solid rgba(79, 142, 175, 0.15);
+      background: rgba(10, 27, 42, 0.84); color: #7994a6;
+    }
+    .search input { width: 100%; background: transparent; border: 0; color: var(--text); outline: none; font-size: 11px; }
+    .pill {
+      height: 31px; padding: 0 11px; border-radius: 16px; border: 1px solid rgba(85, 153, 185, 0.19);
+      background: rgba(8, 24, 38, 0.72); color: #7da1b5; display: flex; align-items: center; gap: 6px; font-size: 10px;
+      cursor: pointer; white-space: nowrap;
+    }
+    .pill.live { color: #5ce8aa; }
+    .pill.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #48e39a; box-shadow: 0 0 8px rgba(72, 227, 154, .8); }
+    .clock { color: #a9c0cd; font-family: var(--font-mono); font-size: 13px; letter-spacing: .8px; }
+    .avatar { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 50%; color: white; font-weight: 800; background: linear-gradient(135deg, #38d4e3, #2674ff); }
+
+    .ticker-strip {
+      height: 39px; display: grid; grid-template-columns: 80px 1fr; align-items: center;
+      border-bottom: 1px solid rgba(66, 135, 172, 0.13); background: rgba(4, 16, 28, 0.96); overflow: hidden;
+    }
+    .ticker-live {
+      align-self: stretch; display: flex; align-items: center; justify-content: center; gap: 7px;
+      background: linear-gradient(90deg, rgba(23, 224, 238, .94), rgba(35, 184, 208, .88)); color: #02212c;
+      font-size: 11px; font-weight: 900; letter-spacing: 1px;
+    }
+    .ticker-row { display: flex; align-items: center; height: 100%; overflow: hidden; }
+    .ticker-item {
+      min-width: 175px; padding: 0 18px; border-right: 1px solid rgba(77, 139, 168, 0.12); font-family: var(--font-mono);
+      display: flex; gap: 8px; align-items: baseline; white-space: nowrap;
+    }
+    .ticker-name { color: #e3c56a; font-family: var(--font-ui); font-size: 11px; font-weight: 700; }
+    .ticker-price { color: #eef8ff; font-size: 12px; font-weight: 800; }
+    .ticker-change { font-size: 10px; }
+
+    .dashboard {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 310px minmax(560px, 1.13fr) minmax(560px, 1.08fr) 324px;
+      grid-template-areas: "left market signals right";
+      gap: 12px;
+      align-items: start;
+    }
+
+    .left-col { grid-area: left; display: grid; gap: 12px; }
+    .market-col { grid-area: market; display: grid; gap: 12px; }
+    .signals-col { grid-area: signals; display: grid; gap: 12px; }
+    .right-col { grid-area: right; display: grid; gap: 12px; }
+
+    .panel {
+      position: relative;
+      border-radius: var(--radius);
+      border: 1px solid rgba(68, 137, 172, 0.18);
+      background:
+        linear-gradient(180deg, rgba(12, 31, 49, 0.92), rgba(6, 20, 34, 0.94)),
+        radial-gradient(circle at 50% 0%, rgba(18, 100, 127, .1), transparent 40%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012), var(--shadow);
+      overflow: hidden;
+    }
+    .panel::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(48, 192, 216, .02) 50%, transparent);
+    }
+    .panel-header {
+      height: 45px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(64, 131, 165, .12); color: #70e8f0; font-size: 12px; font-weight: 800; letter-spacing: .5px;
+    }
+    .panel-title { display: flex; align-items: center; gap: 8px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px rgba(40, 215, 231, .7); }
+    .status-dot.red { background: var(--red); box-shadow: 0 0 10px rgba(255, 102, 119, .7); }
+    .status-dot.yellow { background: var(--yellow); box-shadow: 0 0 10px rgba(255, 213, 74, .7); }
+    .panel-meta { color: #58788b; font-family: var(--font-mono); font-size: 9px; font-weight: 600; }
+    .mini-badge { padding: 3px 8px; border-radius: 10px; border: 1px solid rgba(91, 145, 171, .16); background: rgba(11, 32, 49, .8); }
+
+    .tabs { display: flex; gap: 3px; }
+    .tab { border: 0; background: transparent; color: #66889b; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 10px; }
+    .tab.active { color: #ffe06a; background: rgba(226, 173, 35, .13); }
+
+    .scrollable { overflow: auto; scrollbar-width: thin; scrollbar-color: rgba(54, 116, 145, .45) transparent; }
+    .scrollable::-webkit-scrollbar { width: 5px; height: 5px; }
+    .scrollable::-webkit-scrollbar-thumb { background: rgba(54, 116, 145, .45); border-radius: 10px; }
+
+    /* Left column */
+    .anomaly-panel { height: 486px; }
+    .anomaly-summary { padding: 10px 15px; color: #64889c; font-size: 10px; display: flex; align-items: center; justify-content: space-between; }
+    .anomaly-summary strong { color: var(--green); font-size: 12px; }
+    .warning-row { margin: 0 12px 6px; padding: 8px 10px; border-radius: 8px; background: rgba(119, 80, 9, .15); color: #d8a843; font-size: 10px; display: flex; justify-content: space-between; }
+    .anomaly-list { padding: 0 11px 12px; height: 373px; }
+    .anomaly-item {
+      position: relative; padding: 11px 11px 10px 15px; border-left: 2px solid var(--green); border-bottom: 1px solid rgba(67, 127, 157, .08);
+      background: linear-gradient(90deg, rgba(20, 61, 69, .11), transparent 70%);
+    }
+    .anomaly-item.red { border-left-color: var(--red); background: linear-gradient(90deg, rgba(104, 30, 44, .11), transparent 70%); }
+    .anomaly-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .anomaly-rank { color: #48746f; font-family: var(--font-mono); margin-right: 8px; }
+    .anomaly-item.red .anomaly-rank { color: #a15368; }
+    .anomaly-name { font-size: 12px; font-weight: 700; }
+    .anomaly-value { font-family: var(--font-mono); font-size: 12px; font-weight: 900; color: var(--green); }
+    .anomaly-item.red .anomaly-value { color: var(--red); }
+    .anomaly-sub { display: flex; justify-content: space-between; margin-top: 5px; color: #57788a; font-size: 9px; }
+    .tag { padding: 2px 5px; border-radius: 4px; font-size: 8px; background: rgba(25, 122, 124, .16); color: #4dc4a5; }
+    .tag.danger { background: rgba(132, 34, 53, .18); color: #ec6576; }
+
+    .flow-panel { height: 535px; }
+    .flow-list { padding: 6px 12px 14px; height: 474px; }
+    .flow-item { display: grid; grid-template-columns: 22px 1fr 92px; gap: 9px; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(63, 124, 154, .07); }
+    .rank-box { width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center; background: #1d2b37; color: #dbe7ee; font-family: var(--font-mono); font-size: 10px; font-weight: 800; }
+    .rank-box.top { color: #ffdf57; background: rgba(187, 137, 18, .25); }
+    .flow-name { font-size: 12px; font-weight: 700; }
+    .bar-track { height: 5px; border-radius: 5px; background: #152638; margin-top: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff5c69, #ff795f); }
+    .flow-value { text-align: right; color: var(--red); font-family: var(--font-mono); font-size: 12px; font-weight: 900; }
+    .flow-sub { margin-top: 3px; color: #5a798b; font-size: 8px; }
+    .green-text { color: var(--green); }
+    .red-text { color: var(--red); }
+    .yellow-text { color: var(--yellow); }
+
+    /* Market column */
+    .market-panel { height: 1015px; }
+    .market-status { margin: 10px 14px 0; height: 35px; border-radius: 8px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(9, 26, 41, .7); border: 1px solid rgba(68, 132, 166, .1); color: #e6ca59; font-size: 10px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; padding: 11px 14px; }
+    .stat-card { min-height: 86px; padding: 13px; border-radius: 9px; border: 1px solid rgba(79, 142, 175, .15); background: rgba(11, 28, 45, .72); text-align: center; }
+    .stat-value { font-family: var(--font-mono); font-size: 19px; font-weight: 900; line-height: 1.1; }
+    .stat-label { margin-top: 5px; color: #6a899b; font-size: 9px; }
+    .stat-sub { margin-top: 4px; color: #527184; font-size: 8px; }
+
+    .sub-card { margin: 0 14px 11px; border-radius: 9px; border: 1px solid rgba(70, 133, 166, .13); background: rgba(7, 22, 37, .72); overflow: hidden; }
+    .sub-title { height: 35px; display: flex; align-items: center; gap: 8px; padding: 0 12px; color: #66dfe8; font-size: 10px; font-weight: 800; border-bottom: 1px solid rgba(64, 125, 155, .09); }
+    .chart-wrap { position: relative; height: 190px; padding: 4px 8px 8px; }
+    .chart-wrap.tall { height: 205px; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .chart-footer { padding: 0 12px 10px; color: #5f7d8f; font-size: 8px; display: flex; align-items: center; gap: 13px; }
+    .legend-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+
+    .market-bottom { display: grid; grid-template-columns: 1.05fr .95fr; gap: 11px; margin: 0 14px 14px; }
+    .mini-panel { border-radius: 9px; border: 1px solid rgba(70, 133, 166, .13); background: rgba(7, 22, 37, .72); overflow: hidden; min-height: 247px; }
+    .divergence-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; padding: 10px; }
+    .div-card { border: 1px solid rgba(68, 131, 162, .12); border-radius: 8px; padding: 10px; text-align: center; }
+    .div-value { font-family: var(--font-mono); font-size: 20px; color: var(--green); font-weight: 900; }
+    .heat-bar { height: 7px; margin: 11px 12px 4px; border-radius: 8px; background: linear-gradient(90deg, #2bc6de, #56dc9d, #f9d84c, #ff9145, #ff5967); position: relative; }
+    .heat-marker { position: absolute; top: -5px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #ffe767; transform: translateX(-50%); }
+    .heat-labels { display: flex; justify-content: space-between; padding: 0 12px; color: #4f6d7d; font-size: 7px; }
+    .heat-result { padding: 15px 12px 12px; display: flex; align-items: flex-end; justify-content: space-between; }
+    .heat-result strong { font-size: 31px; line-height: 1; color: #dfff45; }
+    .ladder { padding: 9px 12px 14px; }
+    .ladder-row { display: grid; grid-template-columns: 52px 1fr 22px; gap: 8px; align-items: center; padding: 8px 0; color: #7c99a9; font-size: 9px; }
+    .ladder-bar { height: 8px; border-radius: 7px; background: #1b2c3b; overflow: hidden; }
+    .ladder-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #d05b3f, #f2a34a); }
+    .ladder-count { color: #efb64f; font-family: var(--font-mono); font-size: 13px; font-weight: 900; }
+
+    /* Signals */
+    .signals-panel { height: 1015px; }
+    .signal-context { height: 42px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between; color: #718e9f; font-size: 10px; border-bottom: 1px solid rgba(64, 125, 155, .08); }
+    .mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 9px 14px 0; }
+    .mode-tab { height: 39px; border-radius: 8px; border: 1px solid rgba(55, 194, 218, .25); background: rgba(8, 24, 39, .5); color: #6cd8e0; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .mode-tab.secondary { color: #bd8cff; border-color: rgba(169, 97, 240, .25); }
+    .signal-tabs { display: grid; grid-template-columns: 1fr 1fr; margin: 10px 14px 0; border-bottom: 1px solid rgba(66, 127, 158, .13); }
+    .signal-tab { padding: 11px 6px; text-align: center; color: #51798d; font-size: 11px; border-bottom: 2px solid transparent; }
+    .signal-tab.active { color: var(--red); border-color: var(--red); }
+    .analysis-card { margin: 12px 14px 9px; padding: 13px 14px; border-radius: 8px; background: rgba(8, 23, 37, .74); border: 1px solid rgba(71, 134, 165, .1); }
+    .analysis-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+    .analysis-title { color: #f2f7fb; font-size: 10px; font-weight: 800; }
+    .analysis-body { font-size: 11px; line-height: 1.75; color: #d0dfe7; }
+    .analysis-foot { margin-top: 10px; color: #88a2b0; font-size: 9px; }
+    .news-filter { display: flex; gap: 8px; padding: 6px 15px 4px; color: #6d8a9a; font-size: 9px; }
+    .news-filter .active { color: var(--red); }
+    .news-list { height: 651px; padding: 0 14px 12px; }
+    .news-item { padding: 11px 0; border-bottom: 1px solid rgba(68, 129, 158, .11); }
+    .news-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; color: #526f80; font-size: 8px; }
+    .source-pill { padding: 2px 7px; border-radius: 8px; color: #59cf9b; background: rgba(33, 142, 103, .15); font-size: 8px; font-weight: 800; }
+    .source-pill.blue { color: #73b8ff; background: rgba(49, 111, 188, .17); }
+    .source-pill.red { color: #ff8190; background: rgba(159, 44, 64, .18); }
+    .news-title { font-size: 11px; line-height: 1.55; color: #e5eff4; }
+    .signals-footer { position: absolute; left: 14px; right: 14px; bottom: 0; height: 34px; display: flex; align-items: center; gap: 12px; color: #5f7f90; font-size: 9px; background: rgba(7, 20, 33, .96); border-top: 1px solid rgba(64, 124, 153, .12); }
+
+    /* Right column */
+    .global-sentiment { height: 380px; }
+    .health-line { height: 32px; padding: 0 14px; display: flex; align-items: center; color: #557384; font-size: 9px; border-bottom: 1px solid rgba(66, 126, 156, .08); }
+    .gauge-box { position: relative; height: 215px; display: flex; align-items: center; justify-content: center; }
+    .gauge-svg { width: 230px; height: 150px; overflow: visible; }
+    .gauge-number { position: absolute; top: 95px; text-align: center; }
+    .gauge-number strong { display: block; font-family: var(--font-mono); color: #ffd74a; font-size: 35px; line-height: 1; }
+    .gauge-number span { color: #7391a2; font-size: 9px; letter-spacing: 2px; }
+    .sentiment-bars { padding: 0 16px 14px; }
+    .sent-row { display: grid; grid-template-columns: 42px 1fr 38px; gap: 9px; align-items: center; padding: 5px 0; font-size: 9px; }
+    .sent-track { height: 5px; background: #16283a; border-radius: 6px; overflow: hidden; }
+    .sent-fill { height: 100%; border-radius: inherit; }
+
+    .a-sentiment { height: 500px; }
+    .score-layout { padding: 12px 14px 0; display: grid; grid-template-columns: 100px 1fr; gap: 10px; }
+    .score-ring { width: 88px; height: 88px; position: relative; display: grid; place-items: center; }
+    .score-ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(#ffcb44 0 57%, #142638 57% 100%); -webkit-mask: radial-gradient(circle, transparent 54%, #000 56%); mask: radial-gradient(circle, transparent 54%, #000 56%); transform: rotate(-30deg); }
+    .score-ring strong { font-family: var(--font-mono); font-size: 24px; color: #d89c2e; }
+    .score-copy h3 { margin: 2px 0 3px; color: #ffd263; font-size: 15px; }
+    .score-copy p { margin: 0 0 7px; color: #778f9d; font-size: 9px; }
+    .factor-row { display: grid; grid-template-columns: 50px 1fr 20px; gap: 6px; align-items: center; margin: 5px 0; color: #688697; font-size: 8px; }
+    .factor-track { height: 5px; border-radius: 5px; background: #182a3a; overflow: hidden; }
+    .factor-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff535e, #ffd94a); }
+    .signal-tags { display: flex; flex-wrap: wrap; gap: 5px; padding: 11px 13px 7px; }
+    .signal-chip { padding: 4px 7px; border-radius: 4px; border: 1px solid rgba(86, 154, 185, .14); color: #7597a8; background: rgba(9, 25, 39, .72); font-size: 8px; }
+    .prediction { margin: 0 13px 12px; padding: 11px; border-radius: 8px; border: 1px solid rgba(62, 132, 164, .13); background: rgba(7, 20, 33, .72); }
+    .prediction-title { color: #69dce5; font-size: 10px; font-weight: 800; margin-bottom: 7px; }
+    .prediction-main { display: flex; align-items: center; justify-content: space-between; }
+    .prediction-main strong { color: var(--red); font-size: 16px; }
+    .confidence { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; color: var(--red); font-family: var(--font-mono); font-size: 11px; font-weight: 900; border: 7px solid rgba(255, 84, 104, .9); border-left-color: rgba(255, 84, 104, .18); }
+    .predict-list { margin-top: 8px; display: grid; gap: 5px; color: #7c98a8; font-size: 8px; }
+    .risk-note { text-align: center; padding: 3px 0 8px; color: #8b7650; font-size: 8px; }
+
+    .concept-panel { height: 456px; }
+    .concept-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; padding: 12px; }
+    .concept-card { min-height: 128px; border-radius: 9px; padding: 12px; border: 1px solid rgba(72, 135, 166, .13); background: rgba(9, 25, 39, .72); }
+    .concept-card h4 { margin: 0 0 7px; font-size: 12px; }
+    .concept-return { color: var(--red); font-family: var(--font-mono); font-size: 17px; font-weight: 900; }
+    .concept-meta { margin-top: 6px; color: #557486; font-size: 8px; }
+    .spark-bars { display: flex; gap: 3px; align-items: end; height: 22px; margin-top: 10px; }
+    .spark-bars span { width: 9px; border-radius: 2px; background: linear-gradient(180deg, #ff8b59, #ff5b69); }
+
+    .bottom-dock {
+      position: fixed; right: 22px; bottom: 8px; z-index: 20;
+      height: 33px; padding: 0 12px; display: flex; align-items: center; gap: 11px;
+      border-radius: 9px; border: 1px solid rgba(78, 134, 165, .17); background: rgba(8, 20, 34, .94); color: #668498; font-size: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    }
+
+    .pulse { animation: pulse 1.8s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+
+    @media (max-width: 1650px) {
+      .app-shell { min-width: 1280px; }
+      .topbar { grid-template-columns: 300px 1fr 580px; }
+      .nav-btn { padding: 0 10px; }
+      .dashboard { grid-template-columns: 280px minmax(500px, 1fr) minmax(500px, 1fr) 300px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="window-strip">
+      <span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span>
+      <span class="window-title">6StockPulse · 全球资讯量化系统</span>
+    </div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">⌁</div>
+        <div>
+          <div class="brand-name">6STOCKPULSE</div>
+          <div class="brand-sub">Quantification System v9.1.0</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="主导航">
+        <button class="nav-btn">全球热点</button>
+        <button class="nav-btn active">全景市场</button>
+        <button class="nav-btn">实时监控 <span class="badge-pro">PRO</span></button>
+        <button class="nav-btn">概念图谱 <span class="badge-pro badge-3d">3D</span></button>
+        <button class="nav-btn">未来趋势 <span class="badge-pro">PRO</span></button>
+        <button class="nav-btn">全量数据 <span class="badge-pro">PRO</span></button>
+        <button class="nav-btn">消息中心</button>
+      </nav>
+
+      <div class="tools">
+        <label class="search">⌕ <input id="searchInput" placeholder="搜索新闻、板块、股票..." /></label>
+        <span class="pill live">LIVE</span>
+        <span class="pill">82 人在线</span>
+        <span class="clock" id="clock">--:--:--</span>
+        <button class="pill">◷ 历史</button>
+        <button class="pill">⌁ 新闻源</button>
+        <button class="pill">↔ 翻译</button>
+        <button class="pill">⚙ 设置</button>
+        <button class="pill" id="refreshBtn">⟳ 刷新</button>
+        <span class="avatar">6</span>
+      </div>
+    </header>
+
+    <section class="ticker-strip">
+      <div class="ticker-live">▶ LIVE</div>
+      <div class="ticker-row" id="tickerRow"></div>
+    </section>
+
+    <main class="dashboard">
+      <aside class="left-col">
+        <section class="panel anomaly-panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="status-dot red"></span>异动监测</div>
+            <div class="panel-meta">复盘 11:30 <span class="mini-badge red-text">21</span></div>
+          </div>
+          <div class="anomaly-summary"><span><strong>● 当前活跃 2</strong> · 全天累计 21</span><span>已过滤低质量</span></div>
+          <div class="warning-row"><span>期货异动 · 影响 A 股板块</span><span>2</span></div>
+          <div class="anomaly-list scrollable" id="anomalyList"></div>
+        </section>
+
+        <section class="panel flow-panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="status-dot yellow"></span>板块资金流向</div>
+            <div class="tabs"><button class="tab active">概念</button><button class="tab">行业</button></div>
+          </div>
+          <div class="flow-list scrollable" id="flowList"></div>
+        </section>
+      </aside>
+
+      <section class="market-col">
+        <section class="panel market-panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="status-dot"></span>全景市场分析</div>
+            <div class="panel-meta"><span class="mini-badge">2象</span></div>
+          </div>
+          <div class="market-status"><span>● 午间休市</span><span id="marketTime">11:53:53</span></div>
+          <div class="stats-grid" id="statsGrid"></div>
+
+          <div class="sub-card">
+            <div class="sub-title">⌁ 上证分钟走势（今日）</div>
+            <div class="chart-wrap tall"><canvas id="indexChart"></canvas></div>
+            <div class="chart-footer"><span>昨收 <b>4106.25</b></span><span>现价 <b class="green-text">4096.14</b></span><span class="green-text">-0.25%</span><span>情绪预期 57分</span></div>
+          </div>
+
+          <div class="sub-card">
+            <div class="sub-title">▥ 全 A 分钟量能走势（今日 vs 昨日）</div>
+            <div class="chart-wrap"><canvas id="volumeChart"></canvas></div>
+            <div class="chart-footer">
+              <span><i class="legend-dot" style="background:#ff5d68"></i>今日</span>
+              <span><i class="legend-dot" style="background:#4a75aa"></i>昨日</span>
+              <span>今累计 9.27亿手 | 20,719.35亿元</span>
+              <span class="green-text">同期差额 -9.0%</span>
+            </div>
+          </div>
+
+          <div class="market-bottom">
+            <div class="mini-panel">
+              <div class="sub-title">⌁ 赚钱效应 · 柏拉斐空</div>
+              <div class="divergence-grid">
+                <div class="div-card"><div class="stat-label">追涨盈亏</div><div class="div-value">-0.06%</div><div class="stat-sub">8红 / 12绿 · 追高被套</div></div>
+                <div class="div-card"><div class="stat-label">抄底盈亏</div><div class="div-value">-1.75%</div><div class="stat-sub">6红 / 13绿 · 抄底偏亏</div></div>
+              </div>
+              <div style="padding:0 12px;color:#6e8c9d;font-size:8px;">短线情绪温度</div>
+              <div class="heat-bar"><span class="heat-marker" style="left:57%"></span></div>
+              <div class="heat-labels"><span>冰点</span><span>发酵→高潮</span><span>退潮</span></div>
+              <div class="heat-result"><div><span style="color:#cb8149;font-size:9px;">◆ 热点持续</span><br><strong>中性</strong></div><div style="text-align:right"><b class="yellow-text">+0.01%</b><br><span class="panel-meta">样本 80只<br>破涨停 36%</span></div></div>
+            </div>
+            <div class="mini-panel">
+              <div class="sub-title">▥ 连板梯队</div>
+              <div class="ladder" id="ladder"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="signals-col">
+        <section class="panel signals-panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="status-dot red"></span>信号复盘</div>
+            <div class="panel-meta">11:50</div>
+          </div>
+          <div class="signal-context"><span><b class="yellow-text">● 午盘观察</b>　板块轮动 · 资金动向</span><span>实时 11:50</span></div>
+          <div class="mode-tabs"><button class="mode-tab">当日分析</button><button class="mode-tab secondary">AI 叙事 · 问通 <span class="badge-pro">PRO</span></button></div>
+          <div class="signal-tabs"><div class="signal-tab active">↑ 机会挖掘　利好</div><div class="signal-tab">↓ 风险提醒　利空</div></div>
+          <div class="analysis-card">
+            <div class="analysis-head"><div class="analysis-title">✦ 技术摘要 · 量价综合</div><div class="panel-meta">53 分钟前</div></div>
+            <div class="analysis-body"><b class="red-text">▲ 机会分析　AI</b><br>超短情绪修复信号明确：昨日打二板以上表现大涨 4.3%，昨日连板指数同步走强，资金抱团高辨识度个股。化学制药仍具高度维持主线地位，元件、专业工程与液冷新生启动。高标溢价持续扩散，连板赚钱效应可能进一步向新生板块传导，形成短线正向循环。</div>
+            <div class="analysis-foot">技术中性（53分），方向待确认；量能充沛，资金持续流入；涨停64家，赚钱效应回强。</div>
+          </div>
+          <div class="news-filter"><span class="active">全球热点</span><span>利好资讯</span></div>
+          <div class="news-list scrollable" id="newsList"></div>
+          <div class="signals-footer"><strong class="red-text">中芯概念 -2.67%</strong><span>暂无数据</span></div>
+        </section>
+      </section>
+
+      <aside class="right-col">
+        <section class="panel global-sentiment">
+          <div class="panel-header"><div class="panel-title"><span class="status-dot yellow"></span>全球情绪指数</div><span class="mini-badge">中性</span></div>
+          <div class="health-line">● 服务正常　· 216条　· 概念来源：东方财富　· 运行1009min</div>
+          <div class="gauge-box">
+            <svg class="gauge-svg" viewBox="0 0 240 150" aria-hidden="true">
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#ff5270"/>
+                  <stop offset="54%" stop-color="#ffb340"/>
+                  <stop offset="100%" stop-color="#ffe548"/>
+                </linearGradient>
+              </defs>
+              <path d="M 35 125 A 90 90 0 0 1 205 125" fill="none" stroke="#142638" stroke-width="16" stroke-linecap="round"/>
+              <path d="M 35 125 A 90 90 0 0 1 205 125" fill="none" stroke="url(#gaugeGrad)" stroke-width="16" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="127"/>
+              <line x1="120" y1="124" x2="132" y2="67" stroke="#2dd9e5" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="120" cy="124" r="5" fill="#2dd9e5"/>
+            </svg>
+            <div class="gauge-number"><strong>55</strong><span>SENTIMENT</span></div>
+          </div>
+          <div class="sentiment-bars" id="globalSentimentBars"></div>
+        </section>
+
+        <section class="panel a-sentiment">
+          <div class="panel-header"><div class="panel-title"><span class="status-dot red"></span>A股情绪指数</div><span class="mini-badge yellow-text">谨慎 6</span></div>
+          <div class="score-layout">
+            <div class="score-ring"><strong>57</strong></div>
+            <div class="score-copy">
+              <h3>中性震荡 <span class="mini-badge yellow-text">谨慎</span></h3>
+              <p>情绪中性，涨跌互现，轻仓观察为主</p>
+              <div id="factorRows"></div>
+            </div>
+          </div>
+          <div class="signal-tags"><span class="signal-chip red-text">涨停64家活跃</span><span class="signal-chip red-text">多空比偏弱</span><span class="signal-chip red-text">5板块强势</span><span class="signal-chip green-text">全球情绪偏稳</span><span class="signal-chip green-text">利空资讯偏多</span></div>
+          <div class="prediction">
+            <div class="prediction-title">⌁ 领先情绪预测 <span style="float:right;color:#58788b;font-weight:400">6/25 预测</span></div>
+            <div class="prediction-main"><div><strong>↗ 明日：上行</strong><br><span class="panel-meta">置信度：80%</span></div><div class="confidence">80%</div></div>
+            <div class="predict-list"><span>↑ 涨停64家，连板接力情绪有支撑</span><span>↓ 美股全线下跌，明日A股开盘承压</span><span>↗ 情绪57分中性区间，明日方向待观察</span><span>↑ 板块热点持续活跃，题材轮动有望延续</span></div>
+          </div>
+          <div class="risk-note">⚠ 仅供参考 · 不构成投资建议 · 数据实时更新</div>
+        </section>
+
+        <section class="panel concept-panel">
+          <div class="panel-header"><div class="panel-title"><span class="status-dot yellow"></span>A股概念领涨板块</div><span class="panel-meta">06-24 11:50 实时</span></div>
+          <div class="concept-grid" id="conceptGrid"></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="bottom-dock"><span>⋯</span><span>⌯</span><span class="badge-pro">P</span><b>PRO</b><span>到期 2028/5/31</span><span>☀</span></div>
+
+  <script>
+    // API 切换：后端可用时改为 true，并将 ENDPOINTS 对应到 FastAPI。
+    const CONFIG = {
+      useApi: true,
+      apiBase: '',
+      wsUrl: `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/realtime`,
+      endpoints: {
+        tickers: '/api/market/tickers',
+        anomalies: '/api/anomalies',
+        sectorFlow: '/api/sectors/flow',
+        overview: '/api/dashboard/snapshot',
+        intraday: '/api/stocks/000001/kline',
+        volume: '/api/market/breadth',
+        news: '/api/news',
+        sentiment: '/api/sentiment/ashare',
+        concepts: '/api/concepts/leaders',
+        ladder: '/api/short-term/limit-up-ladder',
+        heat: '/api/short-term/heat',
+        signals: '/api/signals'
+      }
+    };
+
+    const mock = {
+      tickers: [
+        ['上证','25,587','-2.21%'], ['S&P 500','7365.46','-1.44%'], ['黄金','$4,080.74','-1.65%'], ['白银','$62.03','-0.77%'],
+        ['原油WTI','$72.44','-1.05%'], ['天然气','$3.14','-0.13%'], ['布伦特','$76.11','-0.90%'], ['铜','$625.63','-0.68%'],
+        ['欧元/美元','1.1390','-0.41%'], ['美元/日元','161.5419','-0.04%'], ['美元/离岸人民币','6.8004','+0.12%']
+      ],
+      anomalies: [
+        {name:'沪银', source:'白银/贵金', value:'▼5.08%', dir:'green', tag:'贵金属', time:'08:55'},
+        {name:'原油', source:'石油石化', value:'▼3.20%', dir:'green', tag:'能源', time:'08:31'},
+        {name:'肝素概念', source:'日内 +2.57%', value:'▲1.24%/3min', dir:'red', tag:'极速', time:'09:45'},
+        {name:'高带宽内存', source:'日内 +2.59%', value:'▲1.05%/3min', dir:'red', tag:'极速', time:'10:01'},
+        {name:'人脑工程', source:'日内 +0.93%', value:'▼0.88%/3min', dir:'green', tag:'异动', time:'09:35'},
+        {name:'先进封装', source:'日内 -2.14%', value:'▲0.88%/3min', dir:'red', tag:'极速', time:'10:01'},
+        {name:'CPO概念', source:'日内 -0.79%', value:'▼0.84%/3min', dir:'green', tag:'异动', time:'09:39'}
+      ],
+      flows: [
+        ['存储芯片','+218.8亿','+1.22%','兆易创新',100], ['芯片概念','+174.8亿','-0.65%','高带电子',84], ['汽车电子','+130.2亿','-1.01%','瀚博科技',70],
+        ['中芯国际概念','+123.3亿','+2.09%','精测电子',64], ['国家大基金持股','+114.2亿','+2.44%','精测电子',58], ['共封装光学(CPO)','+105.1亿','+0.25%','海博科技',52],
+        ['先进封装','+91.8亿','+0.58%','汇成股份',45], ['毫米波雷达','+89.7亿','-0.52%','雷瀚微',42], ['人民币贬值受益','+89.0亿','-1.64%','汇成股份',39], ['第三代半导体','+82.5亿','+0.31%','斯达半导',36]
+      ],
+      stats: [
+        ['↑','1027','上涨家数','昨日 2547 · -1520家','red-text'], ['↓','4166','下跌家数','昨日 2542 · +1624家','green-text'], ['◔','56分','今日情绪','中性偏谨慎','yellow-text'],
+        ['▥','64','涨停家数（大涨82）','昨日 103 · -39家','red-text'], ['▥','8','跌停家数（大跌12）','昨日 49 · -41家','green-text'], ['◎','neutral','赚钱效应','横盘震荡','']
+      ],
+      ladder: [['5板以上',6,54],['四板',4,42],['三板',5,48],['二板',5,47]],
+      globalSentiment: [['多头',130,13,'#ff5a66'],['中性',770,77,'#c3d4df'],['空头',100,10,'#4fdfa2']],
+      factors: [['量能',68],['涨停效应',64],['板块强度',90],['全球环境',5],['政策刺激',58],['技术形态',53],['新闻情绪',22]],
+      news: [
+        ['FT市场','9小时前','SpaceX向投资者推介250亿美元债券交易的丰厚收益率（$250亿）','green'],
+        ['CNBC','6小时前','IPO后不到两周，SpaceX通过发债筹集了250亿美元','blue'],
+        ['CNBC','4小时前','VIX所有者 Cboe 进军预测市场，以推动零日期权增长','blue'],
+        ['CNBC科技','6小时前','CFTC 就针对预测市场的行为起诉肯塔基州，使其成为首个面临联邦审查的红州','blue'],
+        ['Investing','8小时前','韩联社报道，三星电子计划回购590亿美元的股票','green'],
+        ['36氪','19分钟前','A股三大指数午间休盘涨跌不一，药明康德涨停','red'],
+        ['金十数据','20分钟前','金十整理：美光财报将至，12家投行预测存储涨价将推动高利润与股价上行','red'],
+        ['金十数据','26分钟前','瑞银认为，投资者过度解读沃什的鹰派措辞，长期维持利率不变概率下降','red'],
+        ['FT市场','7小时前','美国芯片制造商因加息担忧导致华尔街下滑','green'],
+        ['CNBC科技','8小时前','SpaceX看到卖空者的一些兴趣，但许多人仍然害怕押注马斯克','blue']
+      ],
+      concepts: [
+        ['昨日打二板以上表现','+5.41%','东方财富 · 0条关联', [7,11,14,18,15,9]],
+        ['中芯概念 #2','+2.67%','东方财富 · 0条关联', [6,8,7,12,9,11]],
+        ['高带宽内存 #3','+2.59%','东方财富 · 0条关联', [5,8,12,15,13,10]],
+        ['存储芯片','+2.16%','东方财富 · 0条关联', [4,6,9,11,14,12]],
+        ['EDA概念','+1.88%','东方财富 · 2条关联', [5,7,8,10,13,15]],
+        ['PVD概念','+1.72%','东方财富 · 1条关联', [4,5,7,9,11,10]]
+      ]
+    };
+
+    function fmtColor(change) { return change.startsWith('+') ? 'red-text' : 'green-text'; }
+
+    function renderTickers(data) {
+      document.getElementById('tickerRow').innerHTML = data.map(([name, price, change]) => `
+        <div class="ticker-item"><span class="ticker-name">${name}</span><span class="ticker-price">${price}</span><span class="ticker-change ${fmtColor(change)}">${change}</span></div>
+      `).join('');
+    }
+
+    function renderAnomalies(data) {
+      document.getElementById('anomalyList').innerHTML = data.map((x, i) => `
+        <div class="anomaly-item ${x.dir === 'red' ? 'red' : ''}">
+          <div class="anomaly-top"><div><span class="anomaly-rank">${String(i + 1).padStart(2,'0')}</span><span class="anomaly-name">${x.name}</span></div><span class="anomaly-value">${x.value}</span></div>
+          <div class="anomaly-sub"><span><span class="tag ${x.dir === 'red' ? 'danger' : ''}">${x.tag}</span>　${x.source}</span><span>◷ ${x.time}</span></div>
+        </div>`).join('');
+    }
+
+    function renderFlows(data) {
+      document.getElementById('flowList').innerHTML = data.map((x, i) => `
+        <div class="flow-item"><span class="rank-box ${i < 3 ? 'top' : ''}">${i+1}</span><div><div class="flow-name">${x[0]}</div><div class="bar-track"><div class="bar-fill" style="width:${x[4]}%"></div></div></div><div><div class="flow-value">${x[1]}</div><div class="flow-sub"><span class="${fmtColor(x[2])}">${x[2]}</span>　${x[3]}</div></div></div>
+      `).join('');
+    }
+
+    function renderStats(data) {
+      document.getElementById('statsGrid').innerHTML = data.map(x => `
+        <div class="stat-card"><div class="${x[4]}" style="font-size:14px">${x[0]}</div><div class="stat-value ${x[4]}">${x[1]}</div><div class="stat-label">${x[2]}</div><div class="stat-sub">${x[3]}</div></div>
+      `).join('');
+    }
+
+    function renderLadder(data) {
+      document.getElementById('ladder').innerHTML = data.map(x => `<div class="ladder-row"><span>${x[0]}</span><div class="ladder-bar"><div class="ladder-fill" style="width:${x[2]}%"></div></div><span class="ladder-count">${x[1]}</span></div>`).join('');
+    }
+
+    function renderGlobalSentiment(data) {
+      document.getElementById('globalSentimentBars').innerHTML = data.map(x => `<div class="sent-row"><span style="color:${x[3]}">${x[0]}</span><div class="sent-track"><div class="sent-fill" style="width:${x[2]}%;background:${x[3]}"></div></div><span style="color:${x[3]};text-align:right">${x[1]}</span></div>`).join('');
+    }
+
+    function renderFactors(data) {
+      document.getElementById('factorRows').innerHTML = data.map(x => `<div class="factor-row"><span>${x[0]}</span><div class="factor-track"><div class="factor-fill" style="width:${x[1]}%"></div></div><span>${x[1]}</span></div>`).join('');
+    }
+
+    function renderNews(data) {
+      document.getElementById('newsList').innerHTML = data.map(x => `<article class="news-item"><div class="news-meta"><span class="source-pill ${x[3] === 'blue' ? 'blue' : x[3] === 'red' ? 'red' : ''}">${x[0]}</span><span>${x[1]}</span></div><div class="news-title">${x[2]}</div></article>`).join('');
+    }
+
+    function renderConcepts(data) {
+      document.getElementById('conceptGrid').innerHTML = data.map(x => `<div class="concept-card"><h4>${x[0]}</h4><div class="concept-return">${x[1]}</div><div class="concept-meta">${x[2]}</div><div class="spark-bars">${x[3].map(h => `<span style="height:${h}px"></span>`).join('')}</div></div>`).join('');
+    }
+
+    function scaleCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return {ctx, width: rect.width, height: rect.height};
+    }
+
+    function drawGrid(ctx, w, h, rows = 4, cols = 6) {
+      ctx.strokeStyle = 'rgba(82,136,163,.09)'; ctx.lineWidth = 1;
+      for (let i = 1; i < rows; i++) { const y = h * i / rows; ctx.beginPath(); ctx.moveTo(34,y); ctx.lineTo(w-12,y); ctx.stroke(); }
+      for (let i = 1; i < cols; i++) { const x = 34 + (w-46)*i/cols; ctx.beginPath(); ctx.moveTo(x,8); ctx.lineTo(x,h-18); ctx.stroke(); }
+    }
+
+    function generateIndexData(n=95) {
+      const arr=[]; let v=4095;
+      for (let i=0;i<n;i++) {
+        v += (Math.random()-.52)*5 + (i>52 && i<74 ? -1.1 : 0) + (i>82 ? 2.8 : 0);
+        arr.push(v);
+      }
+      return arr;
+    }
+    let indexData = generateIndexData();
+
+    function drawIndexChart() {
+      const canvas = document.getElementById('indexChart');
+      const {ctx, width:w, height:h} = scaleCanvas(canvas);
+      ctx.clearRect(0,0,w,h); drawGrid(ctx,w,h,5,7);
+      const pad={l:34,r:16,t:12,b:20}; const min=Math.min(...indexData)-4, max=Math.max(...indexData)+4;
+      const x=i=>pad.l+i*(w-pad.l-pad.r)/(indexData.length-1); const y=v=>pad.t+(max-v)*(h-pad.t-pad.b)/(max-min);
+      const grad=ctx.createLinearGradient(0,pad.t,0,h-pad.b); grad.addColorStop(0,'rgba(64,226,159,.22)'); grad.addColorStop(1,'rgba(64,226,159,0)');
+      ctx.beginPath(); indexData.forEach((v,i)=> i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v))); ctx.lineTo(x(indexData.length-1),h-pad.b); ctx.lineTo(x(0),h-pad.b); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+      ctx.beginPath(); indexData.forEach((v,i)=> i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v))); ctx.strokeStyle='#47df9b'; ctx.lineWidth=1.7; ctx.stroke();
+      const lastX=x(indexData.length-1), lastY=y(indexData.at(-1)); ctx.fillStyle='#65e8ab'; ctx.beginPath(); ctx.arc(lastX,lastY,3.3,0,Math.PI*2);ctx.fill();
+      ctx.setLineDash([5,5]);ctx.strokeStyle='rgba(244,212,76,.6)';ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(w-14,lastY);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#536f80';ctx.font='8px '+getComputedStyle(document.body).fontFamily;['09:30','10:00','10:30','11:00','11:30','14:00','15:00'].forEach((t,i)=>ctx.fillText(t,34+i*(w-50)/6,h-6));
+    }
+
+    function drawVolumeChart() {
+      const canvas = document.getElementById('volumeChart');
+      const {ctx, width:w, height:h} = scaleCanvas(canvas);
+      ctx.clearRect(0,0,w,h); drawGrid(ctx,w,h,4,7);
+      const pad={l:34,r:13,t:12,b:20}; const n=105;
+      for(let i=0;i<n;i++) {
+        const x=pad.l+i*(w-pad.l-pad.r)/n; const today=Math.max(4, 70*Math.exp(-i/17)+(Math.random()*11)); const yesterday=Math.max(3, 40*Math.exp(-i/22)+(Math.random()*8)+(i>70?(i-70)*.35:0));
+        const bw=Math.max(1,(w-pad.l-pad.r)/n*.72);
+        ctx.fillStyle=i<55?(i%4===0?'rgba(255,92,105,.75)':'rgba(61,210,151,.65)'):'rgba(45,77,111,.48)';
+        ctx.fillRect(x,h-pad.b-today,bw,today);
+        ctx.fillStyle='rgba(63,102,151,.38)'; ctx.fillRect(x+1,h-pad.b-yesterday,bw,yesterday);
+      }
+      ctx.fillStyle='#536f80';ctx.font='8px '+getComputedStyle(document.body).fontFamily;['09:30','10:00','10:30','11:00','11:30','14:00','15:00'].forEach((t,i)=>ctx.fillText(t,34+i*(w-50)/6,h-6));
+    }
+
+    async function fetchJson(path) {
+      const r = await fetch(CONFIG.apiBase + path, {headers:{'Accept':'application/json'}});
+      if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+      const json = await r.json();
+      // 统一响应包络: {ok, data, meta} 或直接返回 data
+      return json.ok !== undefined ? json.data : json;
+    }
+
+    async function bootstrap() {
+      renderTickers(mock.tickers); renderAnomalies(mock.anomalies); renderFlows(mock.flows); renderStats(mock.stats);
+      renderLadder(mock.ladder); renderGlobalSentiment(mock.globalSentiment); renderFactors(mock.factors); renderNews(mock.news); renderConcepts(mock.concepts);
+      requestAnimationFrame(()=>{ drawIndexChart(); drawVolumeChart(); });
+      if (CONFIG.useApi) {
+        try {
+          // 优先使用 snapshot 聚合接口 (单次请求替代 6 次)
+          const snapshot = await fetchJson(CONFIG.endpoints.overview);
+          if (snapshot && snapshot.data) {
+            const d = snapshot.data;
+            if (d.tickers && d.tickers.length) {
+              // 转换为 mock 格式: [name, price, changePct]
+              renderTickers(d.tickers.map(t => [t.name, String(t.price||0), (t.change_pct>0?'+':'')+(t.change_pct||0).toFixed(2)+'%']));
+            }
+            if (d.anomalies && d.anomalies.length) {
+              renderAnomalies(d.anomalies.map(a => ({
+                name: a.stock_name||a.symbol, source: a.event_type,
+                value: (a.direction==='up'?'▲':'▼')+Math.abs(a.change_pct||0).toFixed(2)+'%',
+                dir: a.direction==='up'?'red':'green', tag: a.event_type, time: (a.detected_at||'').slice(11,16)
+              })));
+            }
+            if (d.sector_flow && d.sector_flow.length) {
+              renderFlows(d.sector_flow.map(s => [s.sector_name, (s.main_net_inflow/1e8).toFixed(1)+'亿', (s.change_pct||0).toFixed(2)+'%', s.leader_name||'', s.bar_pct||50]));
+            }
+            if (d.stats && d.stats.length) renderStats(d.stats);
+            if (d.ladder && d.ladder.length) renderLadder(d.ladder);
+            if (d.news && d.news.length) {
+              renderNews(d.news.map(n => [n.source||'快讯', (n.publish_time||'').slice(11,16), n.title, n.sentiment>0?'green':n.sentiment<0?'red':'blue']));
+            }
+            if (d.concept_leaders && d.concept_leaders.length) {
+              renderConcepts(d.concept_leaders.map(c => [c.sector_name, (c.change_pct||0).toFixed(2)+'%', '连续'+c.consecutive_days+'天', [60,40,80,50,70,45]]));
+            }
+            if (d.sentiment) {
+              if (d.sentiment.ashare && d.sentiment.ashare.factors) {
+                const f = d.sentiment.ashare.factors;
+                renderFactors(Object.entries(f).map(([k,v])=>[k,v.normalized||v||50]));
+              }
+            }
+          } else {
+            // Fallback: 逐个请求
+            const [tickers, anomalies, flows, news, concepts] = await Promise.all([
+              fetchJson(CONFIG.endpoints.tickers), fetchJson(CONFIG.endpoints.anomalies),
+              fetchJson(CONFIG.endpoints.sectorFlow), fetchJson(CONFIG.endpoints.news),
+              fetchJson(CONFIG.endpoints.concepts)
+            ]);
+            if (tickers && tickers.length) renderTickers(tickers.map(t => [t.name, String(t.price||0), (t.change_pct>0?'+':'')+(t.change_pct||0).toFixed(2)+'%']));
+            if (anomalies && anomalies.length) renderAnomalies(anomalies);
+            if (flows && flows.length) renderFlows(flows);
+            if (news && news.length) renderNews(news);
+            if (concepts && concepts.length) renderConcepts(concepts);
+          }
+        } catch (err) { console.warn('API 不可用，继续使用演示数据：', err); }
+      }
+    }
+
+    function tickClock() {
+      const d = new Date(); const t = d.toLocaleTimeString('zh-CN',{hour12:false});
+      document.getElementById('clock').textContent=t; document.getElementById('marketTime').textContent=t;
+    }
+
+    function simulateRefresh() {
+      indexData = generateIndexData(); drawIndexChart(); drawVolumeChart();
+      const btn=document.getElementById('refreshBtn'); btn.classList.add('pulse'); setTimeout(()=>btn.classList.remove('pulse'),900);
+    }
+
+    window.addEventListener('resize', ()=>{ drawIndexChart(); drawVolumeChart(); });
+    document.getElementById('refreshBtn').addEventListener('click', simulateRefresh);
+    document.getElementById('searchInput').addEventListener('input', e => {
+      const q=e.target.value.trim().toLowerCase();
+      document.querySelectorAll('.news-item,.flow-item,.anomaly-item,.concept-card').forEach(el=>{ el.style.display=!q||el.textContent.toLowerCase().includes(q)?'':'none'; });
+    });
+    setInterval(tickClock,1000); tickClock(); bootstrap();
+  </script>
+</body>
+</html>

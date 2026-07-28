@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL 数据库 ──
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${PG_USER:-davi60}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-}
+      POSTGRES_DB: ${PG_DATABASE:-stockpulse}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-davi60} -d ${PG_DATABASE:-stockpulse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI 接口服务 ──
+  api:
+    build: .
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8900 --log-level info
+    ports:
+      - "8900:8900"
+    environment:
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=${PG_USER:-davi60}
+      - PG_PASSWORD=${PG_PASSWORD:-}
+      - PG_DATABASE=${PG_DATABASE:-stockpulse}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-template}
+      - LLM_MODEL=${LLM_MODEL:-deepseek-v4-flash}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.deepseek.com}
+      - NO_SCHEDULER=1
+      - NO_REALTIME=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Worker 服务 (调度 + 实时采集) ──
+  worker:
+    build: .
+    command: python workers/scheduler_runner.py
+    environment:
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=${PG_USER:-davi60}
+      - PG_PASSWORD=${PG_PASSWORD:-}
+      - PG_DATABASE=${PG_DATABASE:-stockpulse}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-template}
+      - LLM_MODEL=${LLM_MODEL:-deepseek-v4-flash}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.deepseek.com}
+      - RT_REFRESH_SECONDS=${RT_REFRESH_SECONDS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:

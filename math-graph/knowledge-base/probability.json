@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "subject": "probability",
+  "subjectLabel": "概率论与数理统计",
+  "description": "考研数学一概率论核心知识库 · 约25个知识点",
+  "exportedAt": "2026-07-14",
+  "nodes": [
+    {"id":"pr_ch1_01","type":"concept","subject":"gailv","chapter":"第一章 概率论基础","module":"概率定义","name":"概率的基本概念","definition":"样本空间、随机事件、概率的公理化定义","difficulty":2,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["判断"],"prerequisite":[],"formula":{"name":"概率公理","latex":"P(\\Omega)=1,\\;0\\le P(A)\\le 1,\\;P(\\bigcup A_i)=\\sum P(A_i)\\;(\\text{互斥})"},"questions":[]},
+    {"id":"pr_ch1_02","type":"formula","subject":"gailv","chapter":"第一章 概率论基础","module":"条件概率","name":"条件概率","definition":"P(A|B)=P(AB)/P(B)，P(B)>0","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch1_01"],"formula":{"name":"条件概率","latex":"P(A|B)=\\frac{P(AB)}{P(B)}"},"memoryTips":"条件概率依然遵循概率的三个公理","questions":[]},
+    {"id":"pr_ch1_03","type":"formula","subject":"gailv","chapter":"第一章 概率论基础","module":"贝叶斯","name":"贝叶斯公式","definition":"由结果推原因：P(Bᵢ|A)=P(A|Bᵢ)P(Bᵢ)/ΣP(A|Bⱼ)P(Bⱼ)","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch1_02"],"formula":{"name":"贝叶斯公式","latex":"P(B_i|A)=\\frac{P(A|B_i)P(B_i)}{\\sum_j P(A|B_j)P(B_j)}"},"examNotes":"考研几乎每年必考一道贝叶斯应用题","questions":[]},
+    {"id":"pr_ch1_04","type":"concept","subject":"gailv","chapter":"第一章 概率论基础","module":"独立性","name":"事件的独立性","definition":"P(AB)=P(A)P(B)；A与B独立⇔概率不受对方影响","difficulty":2,"importance":4,"examValue":4,"examScore":4,"frequency":4,"teacherFocus":4,"examFrequency":"high","mastery":"none","questionTypes":["判断","计算"],"prerequisite":["pr_ch1_01"],"memoryTips":"独立≠互斥！互斥:A∩B=∅；独立:P(A∩B)=P(A)P(B)","questions":[]},
+    {"id":"pr_ch1_05","type":"formula","subject":"gailv","chapter":"第一章 概率论基础","module":"全概率","name":"全概率公式","definition":"P(A)=ΣP(A|Bᵢ)P(Bᵢ)，Bᵢ构成完备事件组","difficulty":2,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch1_02"],"formula":{"name":"全概率公式","latex":"P(A)=\\sum_{i}P(A|B_i)P(B_i)"},"questions":[]},
+
+    {"id":"pr_ch2_01","type":"concept","subject":"gailv","chapter":"第二章 随机变量","module":"随机变量","name":"随机变量","definition":"将样本空间映射到实数的函数X:Ω→R","difficulty":2,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":[],"prerequisite":["pr_ch1_01"],"questions":[]},
+    {"id":"pr_ch2_02","type":"concept","subject":"gailv","chapter":"第二章 随机变量","module":"分布函数","name":"分布函数","definition":"F(x)=P(X≤x)，单调不减、右连续、F(-∞)=0,F(∞)=1","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_01"],"formula":{"name":"分布函数","latex":"F(x)=P(X\\leq x)"},"questions":[]},
+    {"id":"pr_ch2_03","type":"concept","subject":"gailv","chapter":"第二章 随机变量","module":"离散型","name":"离散型随机变量","definition":"取值有限或可列个，概率分布列pᵢ=P(X=xᵢ)","difficulty":2,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_02"],"questions":[]},
+    {"id":"pr_ch2_04","type":"concept","subject":"gailv","chapter":"第二章 随机变量","module":"连续型","name":"连续型随机变量","definition":"有概率密度f(x)：F(x)=∫f(t)dt，积分区间(-∞,x]","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_02"],"memoryTips":"连续型：单点概率为0；P(X=a)=0","questions":[]},
+    {"id":"pr_ch2_05","type":"formula","subject":"gailv","chapter":"第二章 随机变量","module":"常见分布","name":"二项分布","definition":"n重伯努利试验成功次数：X~B(n,p)","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_03"],"formula":{"name":"二项分布","latex":"P(X=k)=C_n^k p^k(1-p)^{n-k},\\;k=0,1,\\dots,n"},"memoryTips":"E(X)=np, D(X)=np(1-p)","questions":[]},
+    {"id":"pr_ch2_06","type":"formula","subject":"gailv","chapter":"第二章 随机变量","module":"常见分布","name":"泊松分布","definition":"X~P(λ)，适用于稀有事件","difficulty":3,"importance":4,"examValue":4,"examScore":3,"frequency":3,"teacherFocus":3,"examFrequency":"mid","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_03"],"formula":{"name":"泊松分布","latex":"P(X=k)=\\frac{\\lambda^k}{k!}e^{-\\lambda},\\;k=0,1,2,\\dots"},"memoryTips":"E(X)=λ, D(X)=λ；二项分布np→λ时近似为泊松","questions":[]},
+    {"id":"pr_ch2_07","type":"formula","subject":"gailv","chapter":"第二章 随机变量","module":"常见分布","name":"正态分布","definition":"X~N(μ,σ²)，最重要的连续型分布","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_04"],"formula":{"name":"正态分布密度","latex":"f(x)=\\frac{1}{\\sqrt{2\\pi}\\sigma}e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}},\\;X\\sim N(\\mu,\\sigma^2)"},"memoryTips":"标准化：Z=(X-μ)/σ~N(0,1)","questions":[]},
+    {"id":"pr_ch2_08","type":"formula","subject":"gailv","chapter":"第二章 随机变量","module":"常见分布","name":"均匀分布与指数分布","definition":"均匀：X~U(a,b)；指数：X~Exp(λ)，f(x)=λe^{-λx}","difficulty":2,"importance":4,"examValue":4,"examScore":4,"frequency":4,"teacherFocus":3,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_04"],"formula":{"name":"均匀分布","latex":"f(x)=\\frac{1}{b-a},\\;x\\in[a,b]"},"questions":[]},
+
+    {"id":"pr_ch3_01","type":"concept","subject":"gailv","chapter":"第三章 数字特征","module":"期望","name":"数学期望","definition":"E(X)=Σxᵢpᵢ(离散)或∫xf(x)dx(连续)","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_01"],"formula":{"name":"期望","latex":"E(X)=\\int_{-\\infty}^{\\infty}xf(x)dx\\;(\\text{连续}),\\;\\sum x_i p_i\\;(\\text{离散})"},"memoryTips":"E(aX+b)=aE(X)+b；E(X+Y)=E(X)+E(Y)恒成立","questions":[]},
+    {"id":"pr_ch3_02","type":"concept","subject":"gailv","chapter":"第三章 数字特征","module":"方差","name":"方差","definition":"D(X)=E[(X-E(X))²]=E(X²)-[E(X)]²","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch3_01"],"formula":{"name":"方差","latex":"D(X)=E[(X-E(X))^2]=E(X^2)-[E(X)]^2"},"memoryTips":"D(aX+b)=a²D(X)；独立时D(X+Y)=D(X)+D(Y)","questions":[]},
+    {"id":"pr_ch3_03","type":"concept","subject":"gailv","chapter":"第三章 数字特征","module":"协方差","name":"协方差与相关系数","definition":"Cov(X,Y)=E[(X-EX)(Y-EY)]；ρₓᵧ=Cov/√(DX·DY)","difficulty":3,"importance":4,"examValue":4,"examScore":4,"frequency":4,"teacherFocus":4,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch3_01","pr_ch3_02"],"formula":{"name":"相关系数","latex":"\\rho_{XY}=\\frac{Cov(X,Y)}{\\sqrt{D(X)D(Y)}},\\;|\\rho|\\le 1"},"memoryTips":"ρ=0⇔X,Y不相关（线性）≠独立","questions":[]},
+    {"id":"pr_ch3_04","type":"concept","subject":"gailv","chapter":"第三章 数字特征","module":"二维随机变量","name":"二维随机变量","definition":"(X,Y)联合分布、边缘分布、条件分布","difficulty":3,"importance":5,"examValue":5,"examScore":5,"frequency":5,"teacherFocus":5,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_02"],"formula":{"name":"边缘密度","latex":"f_X(x)=\\int_{-\\infty}^{\\infty}f(x,y)dy"},"questions":[]},
+
+    {"id":"pr_ch4_01","type":"concept","subject":"gailv","chapter":"第四章 大数定律与中心极限定理","module":"大数定律","name":"大数定律","definition":"样本均值依概率收敛于期望：X̄→ᴾ E(X)","difficulty":4,"importance":3,"examValue":3,"examScore":3,"frequency":3,"teacherFocus":3,"examFrequency":"mid","mastery":"none","questionTypes":["判断"],"prerequisite":["pr_ch3_01"],"questions":[]},
+    {"id":"pr_ch4_02","type":"concept","subject":"gailv","chapter":"第四章 大数定律与中心极限定理","module":"中心极限定理","name":"中心极限定理","definition":"独立同分布随机变量之和近似正态：ΣXᵢ~N(nμ,nσ²)","difficulty":4,"importance":4,"examValue":4,"examScore":4,"frequency":4,"teacherFocus":4,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch2_07","pr_ch4_01"],"memoryTips":"至少n≥30近似效果较好","questions":[]},
+
+    {"id":"pr_ch5_01","type":"concept","subject":"gailv","chapter":"第五章 数理统计基础","module":"统计量","name":"统计量","definition":"样本均值X̄、样本方差S²、无偏性","difficulty":3,"importance":4,"examValue":4,"examScore":4,"frequency":4,"teacherFocus":4,"examFrequency":"high","mastery":"none","questionTypes":["计算"],"prerequisite":["pr_ch3_01","pr_ch3_02"],"formula":{"name":"样本方差","latex":"S^2=\\frac{1}{n-1}\\sum_{i=1}^n (X_i-\\bar{X})^2"},"memoryTips":"分母是n-1不是n！（无偏估计的要求）","questions":[]},
+    {"id":"pr_ch5_02","type":"concept","subject":"gailv","chapter":"第五章 数理统计基础","module":"三大分布","name":"χ²分布、t分布、F分布","definition":"χ²(n)=ΣZᵢ²(Zᵢ~N(0,1))；t(n)=Z/√(χ²/n)；F=χ²₁/n₁/(χ²₂/n₂)","difficulty":3,"importance":4,"examValue":4,"examScore":4,"frequency":4,"teacherFocus":4,"examFrequency":"high","mastery":"none","questionTypes":["判断","计算"],"prerequisite":["pr_ch2_07"],"memoryTips":"t分布尾部比正态分布厚；自由度→∞时t→N(0,1)","questions":[]}
+  ],
+  "edges": [
+    {"id":"ep001","from":"pr_ch1_01","to":"pr_ch1_02","type":"derive","description":"条件概率由概率定义推出"},
+    {"id":"ep002","from":"pr_ch1_02","to":"pr_ch1_03","type":"derive","description":"贝叶斯公式由条件概率推出"},
+    {"id":"ep003","from":"pr_ch1_01","to":"pr_ch1_04","type":"derive"},
+    {"id":"ep004","from":"pr_ch1_02","to":"pr_ch1_05","type":"derive","description":"全概率公式由条件概率推出"},
+    {"id":"ep005","from":"pr_ch1_01","to":"pr_ch2_01","type":"derive","description":"随机变量定义于样本空间"},
+    {"id":"ep006","from":"pr_ch2_01","to":"pr_ch2_02","type":"derive"},
+    {"id":"ep007","from":"pr_ch2_02","to":"pr_ch2_03","type":"derive"},
+    {"id":"ep008","from":"pr_ch2_02","to":"pr_ch2_04","type":"derive"},
+    {"id":"ep009","from":"pr_ch2_03","to":"pr_ch2_05","type":"derive","description":"二项分布是离散型"},
+    {"id":"ep010","from":"pr_ch2_03","to":"pr_ch2_06","type":"derive"},
+    {"id":"ep011","from":"pr_ch2_04","to":"pr_ch2_07","type":"derive","description":"正态分布是连续型"},
+    {"id":"ep012","from":"pr_ch2_04","to":"pr_ch2_08","type":"derive"},
+    {"id":"ep013","from":"pr_ch2_01","to":"pr_ch3_01","type":"derive","description":"期望定义于随机变量"},
+    {"id":"ep014","from":"pr_ch3_01","to":"pr_ch3_02","type":"derive","description":"方差由期望推出"},
+    {"id":"ep015","from":"pr_ch3_01","to":"pr_ch3_03","type":"derive"},
+    {"id":"ep016","from":"pr_ch3_02","to":"pr_ch3_03","type":"derive"},
+    {"id":"ep017","from":"pr_ch2_02","to":"pr_ch3_04","type":"derive","description":"二维分布基于分布函数"},
+    {"id":"ep018","from":"pr_ch3_01","to":"pr_ch4_01","type":"derive","description":"大数定律涉及期望"},
+    {"id":"ep019","from":"pr_ch2_07","to":"pr_ch4_02","type":"derive","description":"中心极限定理涉及正态分布"},
+    {"id":"ep020","from":"pr_ch4_01","to":"pr_ch4_02","type":"compare","description":"大数定律描述均值稳定性，中心极限定理描述分布形状"},
+    {"id":"ep021","from":"pr_ch3_01","to":"pr_ch5_01","type":"prerequisite"},
+    {"id":"ep022","from":"pr_ch3_02","to":"pr_ch5_01","type":"prerequisite"},
+    {"id":"ep023","from":"pr_ch2_07","to":"pr_ch5_02","type":"derive","description":"三大分布基于正态分布"}
+  ]
+}

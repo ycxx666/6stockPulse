@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "description": "Global market symbols with tiered refresh priority. Tier 1=15s core indices, Tier 2=60s major stocks, Tier 3=daily",
+    "source": "Derived from World Monitor shared/stocks.json + commodities.json + crypto.json"
+  },
+  "symbols": [
+    {"symbol":"^GSPC",  "name":"S&P 500",            "market":"US",    "type":"index",     "currency":"USD", "tier":1, "sector":""},
+    {"symbol":"^DJI",   "name":"Dow Jones",           "market":"US",    "type":"index",     "currency":"USD", "tier":1, "sector":""},
+    {"symbol":"^IXIC",  "name":"NASDAQ",              "market":"US",    "type":"index",     "currency":"USD", "tier":1, "sector":""},
+    {"symbol":"^HSI",   "name":"Hang Seng",           "market":"HK",    "type":"index",     "currency":"HKD", "tier":1, "sector":""},
+    {"symbol":"^N225",  "name":"Nikkei 225",          "market":"JP",    "type":"index",     "currency":"JPY", "tier":1, "sector":""},
+    {"symbol":"^FTSE",  "name":"FTSE 100",            "market":"UK",    "type":"index",     "currency":"GBP", "tier":1, "sector":""},
+    {"symbol":"^GDAXI", "name":"DAX",                 "market":"DE",    "type":"index",     "currency":"EUR", "tier":1, "sector":""},
+    {"symbol":"000001.SS","name":"Shanghai Composite","market":"CN",    "type":"index",     "currency":"CNY", "tier":1, "sector":""},
+
+    {"symbol":"AAPL",   "name":"Apple",               "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"MSFT",   "name":"Microsoft",           "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"NVDA",   "name":"NVIDIA",              "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"GOOGL",  "name":"Alphabet",            "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"AMZN",   "name":"Amazon",              "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Consumer"},
+    {"symbol":"META",   "name":"Meta",                "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"TSLA",   "name":"Tesla",               "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Consumer"},
+    {"symbol":"BRK-B",  "name":"Berkshire",           "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Financial"},
+    {"symbol":"JPM",    "name":"JPMorgan",            "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Financial"},
+    {"symbol":"V",      "name":"Visa",                "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Financial"},
+    {"symbol":"UNH",    "name":"UnitedHealth",        "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Healthcare"},
+    {"symbol":"XOM",    "name":"Exxon",               "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Energy"},
+    {"symbol":"MA",     "name":"Mastercard",          "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Financial"},
+    {"symbol":"LLY",    "name":"Eli Lilly",           "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Healthcare"},
+    {"symbol":"TSM",    "name":"TSMC",                "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"AVGO",   "name":"Broadcom",            "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"WMT",    "name":"Walmart",             "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Consumer"},
+    {"symbol":"NFLX",   "name":"Netflix",             "market":"NASDAQ","type":"stock",     "currency":"USD", "tier":2, "sector":"Technology"},
+    {"symbol":"BAC",    "name":"Bank of America",     "market":"NYSE",  "type":"stock",     "currency":"USD", "tier":2, "sector":"Financial"},
+    {"symbol":"600519.SS","name":"Kweichow Moutai",   "market":"SSE",   "type":"stock",     "currency":"CNY", "tier":2, "sector":"Consumer"},
+    {"symbol":"0700.HK","name":"Tencent",             "market":"HKEX",  "type":"stock",     "currency":"HKD", "tier":2, "sector":"Technology"},
+
+    {"symbol":"GC=F",   "name":"Gold Futures",        "market":"COMM",  "type":"commodity", "currency":"USD", "tier":1, "sector":""},
+    {"symbol":"CL=F",   "name":"Crude Oil WTI",       "market":"COMM",  "type":"commodity", "currency":"USD", "tier":1, "sector":""},
+    {"symbol":"SI=F",   "name":"Silver Futures",      "market":"COMM",  "type":"commodity", "currency":"USD", "tier":2, "sector":""},
+    {"symbol":"NG=F",   "name":"Natural Gas",         "market":"COMM",  "type":"commodity", "currency":"USD", "tier":2, "sector":""},
+    {"symbol":"HG=F",   "name":"Copper Futures",      "market":"COMM",  "type":"commodity", "currency":"USD", "tier":2, "sector":""},
+
+    {"symbol":"BTC-USD","name":"Bitcoin",             "market":"CRYPTO","type":"crypto",    "currency":"USD", "tier":2, "sector":""},
+    {"symbol":"ETH-USD","name":"Ethereum",            "market":"CRYPTO","type":"crypto",    "currency":"USD", "tier":2, "sector":""},
+
+    {"symbol":"EURUSD=X","name":"EUR/USD",            "market":"FX",    "type":"forex",     "currency":"USD", "tier":2, "sector":""},
+    {"symbol":"USDJPY=X","name":"USD/JPY",            "market":"FX",    "type":"forex",     "currency":"USD", "tier":2, "sector":""},
+    {"symbol":"USDCNY=X","name":"USD/CNY",            "market":"FX",    "type":"forex",     "currency":"USD", "tier":2, "sector":""}
+  ]
+}
