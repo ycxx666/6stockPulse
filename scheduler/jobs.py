@@ -338,8 +338,8 @@ def register_all(svc: SchedulerService):
                      id="gateway_cn_fast_off")
 
     # media: 常规媒体/全球聚合, 24h 恒定 300s (海外源全天出稿)
-    # 51 源单轮实测 467s 超档 → 拆 3 子组(a/b/c, 各 ~17 源) 错峰, 单轮 ~160s <300s
-    for _mg in ("media_a", "media_b", "media_c"):
+    # 51 源单轮实测 467s → 拆3子组仍 343s(海外双路开销大) → 拆 6 子组(a~f, 各 8-9 源) 单轮 ~170s
+    for _mg in ("media_a", "media_b", "media_c", "media_d", "media_e", "media_f"):
         async def _media_poll(group_name=_mg):
             await _gateway_poll(group_name)
         svc.add_interval(_media_poll,

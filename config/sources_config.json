@@ -99,7 +99,7 @@
       "_note": "url 已直改 rss.html(实测200, 无需fallback变体)",
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -118,7 +118,7 @@
       "_note": "url 已直改 rss.html(实测200, 无需fallback变体)",
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -145,7 +145,7 @@
       },
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -172,7 +172,7 @@
       },
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -188,7 +188,7 @@
       "auth": {},
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -204,7 +204,7 @@
       "auth": {},
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -220,7 +220,7 @@
       "auth": {},
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_d"
       }
     },
     {
@@ -234,7 +234,7 @@
       "auth": {},
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -248,7 +248,7 @@
       "auth": {},
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -262,7 +262,7 @@
       "auth": {},
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -276,7 +276,7 @@
       "auth": {},
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -325,7 +325,7 @@
       "_note": "由 news_sources.json 接入(已验证URL)",
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -340,7 +340,7 @@
       "_note": "由 news_sources.json 接入(已验证URL)",
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -355,7 +355,7 @@
       "_note": "由 news_sources.json 接入(已验证URL)",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -400,7 +400,7 @@
       "_note": "由 news_sources.json 接入(已验证URL)",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_d"
       }
     },
     {
@@ -415,7 +415,7 @@
       "_note": "由 news_sources.json 接入(已验证URL)",
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -445,7 +445,7 @@
       "_note": "由 news_sources.json 接入(已验证URL)",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -495,7 +495,7 @@
       "_note": "Google News 查询源(需海外网络/代理)",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -512,7 +512,7 @@
       "_note": "Google News 查询源(需海外网络/代理)",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -529,7 +529,7 @@
       "_note": "Google News 查询源(需海外网络/代理)",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -544,7 +544,7 @@
       "_note": "由 news_sources.json 接入(已验证URL)",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -571,7 +571,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -600,7 +600,7 @@
       "_note": "自news_sources.json接入 status=needs-proxy",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_d"
       }
     },
     {
@@ -617,7 +617,7 @@
       "_note": "自news_sources.json接入 status=needs-proxy",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -634,7 +634,7 @@
       "_note": "自news_sources.json接入 status=needs-proxy",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -716,7 +716,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_a"
+        "group": "media_b"
       }
     },
     {
@@ -731,7 +731,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -910,7 +910,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -976,7 +976,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -1314,7 +1314,7 @@
       "_note": "自news_sources.json接入 status=needs-proxy",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_d"
       }
     },
     {
@@ -1333,7 +1333,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_d"
       }
     },
     {
@@ -1363,7 +1363,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_d"
       }
     },
     {
@@ -1380,7 +1380,7 @@
       "_note": "自news_sources.json接入 status=needs-proxy",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -1412,7 +1412,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_e"
       }
     },
     {
@@ -1649,7 +1649,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -1668,7 +1668,7 @@
       "_note": "自news_sources.json接入 status=ok",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -1928,7 +1928,7 @@
       "_note": "用户新增源(URL完整)",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_d"
       }
     },
     {
@@ -1944,7 +1944,7 @@
       "_note": "用户新增源(URL完整)",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_d"
       }
     },
     {
@@ -1960,7 +1960,7 @@
       "_note": "用户新增源(URL完整)",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
@@ -1976,7 +1976,7 @@
       "_note": "用户新增源(URL完整)",
       "_health": "verified",
       "poll": {
-        "group": "media_c"
+        "group": "media_f"
       }
     },
     {
@@ -1992,7 +1992,7 @@
       "_note": "用户新增源(URL完整)",
       "_health": "verified",
       "poll": {
-        "group": "media_b"
+        "group": "media_c"
       }
     },
     {
