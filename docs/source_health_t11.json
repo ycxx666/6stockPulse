@@ -1,0 +1,189 @@
+[
+  {
+    "name": "微博热搜",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/weibo/search/hot",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "知乎热榜",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/zhihu/hotlist",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "百度热搜",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/baidu/hot",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "今日头条",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/toutiao/hot",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "小红书热点",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/xiaohongshu/board/hotsearch",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "小红书热点(备)",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.app/xiaohongshu/board/hotsearch",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "请求失败: ClientConnectorError",
+    "issue_type": "client-error"
+  },
+  {
+    "name": "X海外热点",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/twitter/trends/1",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "X海外热点(备)",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.app/twitter/trends/1",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "请求失败: ClientConnectorError",
+    "issue_type": "client-error"
+  },
+  {
+    "name": "凤凰资讯",
+    "type": "standard_rss",
+    "url": "https://feed.ifeng.com/rss/news/index.xml",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "请求失败: ClientConnectorDNSError",
+    "issue_type": "client-error"
+  },
+  {
+    "name": "凤凰科技",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/ifeng/tech",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "InfoQ",
+    "type": "standard_rss",
+    "url": "https://www.infoq.cn/feed",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 12304,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "开源中国",
+    "type": "standard_rss",
+    "url": "https://www.oschina.net/news/rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 29141,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "掘金前端",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Ajuejin.cn",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "掘金后端",
+    "type": "rsshub_rss",
+    "url": "https://rss.injahow.cn/juejin/category/backend",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 11795,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "BBC中文",
+    "type": "standard_rss",
+    "url": "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "德国之声",
+    "type": "standard_rss",
+    "url": "https://rss.dw.com/xml/rss-chi-all",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "纽时中国",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Acn.nytimes.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  }
+]

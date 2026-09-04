@@ -1,0 +1,200 @@
+[
+  {
+    "name": "每日经济·查询替代",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Anbd.com.cn",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "澎湃财经·查询替代",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Athepaper.cn",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "中国金融·查询替代",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Acnfin.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "和讯财经·查询替代",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Ahexun.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "极客公园·查询替代",
+    "type": "standard_rss",
+    "url": "https://www.geekpark.net/rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 280770,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "钛媒体官方",
+    "type": "standard_rss",
+    "url": "https://www.tmtpost.com/feed",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 116942,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "虎嗅·查询替代",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Ahuxiu.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "人人都是产品",
+    "type": "standard_rss",
+    "url": "https://www.woshipm.com/feed",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 287317,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "雷锋网",
+    "type": "standard_rss",
+    "url": "https://www.leiphone.com/feed",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 514562,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "财新",
+    "type": "rsshub_rss",
+    "url": "https://rss.injahow.cn/caixin/latest",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 26069,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "澎湃新闻",
+    "type": "rsshub_rss",
+    "url": "https://rss.injahow.cn/thepaper/featured",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 81945,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "雪球今日",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/xueqiu/today",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "见闻实时",
+    "type": "rsshub_rss",
+    "url": "https://rss.injahow.cn/wallstreetcn/live/global",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 67496,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "金十数据",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/jin10/news",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 2071,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "格隆汇",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/gelonghui/article",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "界面新闻",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Ajiemian.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "虎嗅",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Ahuxiu.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "极客公园",
+    "type": "standard_rss",
+    "url": "https://www.geekpark.net/rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 280770,
+    "issue": null,
+    "issue_type": null
+  }
+]

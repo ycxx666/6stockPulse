@@ -1,0 +1,10 @@
+# Unified News Source Gateway 依赖
+feedparser>=6.0          # RSS/Atom 解析
+requests>=2.31           # HTTP 客户端
+beautifulsoup4>=4.12     # HTML 解析/全文提取
+lxml>=5.0                # bs4 加速解析器
+tenacity>=8.0            # 重试机制
+newspaper3k>=0.2.8       # (可选)更强全文提取; 未装自动降级 bs4
+
+# 入库复用项目已有模块(无需额外依赖)
+# infrastructure.database.sqlite_news  → Python 标准库 sqlite3

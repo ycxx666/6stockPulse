@@ -66,6 +66,15 @@ class SchedulerConfig:
         "GLOBAL_INDEX_INTERVAL",
         os.getenv("RT_REFRESH_SECONDS", "15")
     ))
+    # ── 网关新闻(零风险健康源)分档定时采集 ──
+    # 仅采 _health=verified 源; 按 poll.group 分级: cn_fast 交易时段加密 / media 恒定 / slow 低频
+    news_gateway_interval: int = int(os.getenv(   # 兼容旧 env, 同时作 media 档默认值
+        "NEWS_GATEWAY_INTERVAL", "300"))
+    news_cn_fast_day: int = int(os.getenv("NEWS_CN_FAST_DAY", "120"))  # 盘中财经快讯
+    news_cn_fast_off: int = int(os.getenv("NEWS_CN_FAST_OFF", "600"))  # 盘后降频
+    news_media_interval: int = int(os.getenv(
+        "NEWS_MEDIA_INTERVAL", os.getenv("NEWS_GATEWAY_INTERVAL", "300")))
+    news_slow_interval: int = int(os.getenv("NEWS_SLOW_INTERVAL", "600"))
 
 
 @dataclass

@@ -302,6 +302,63 @@ def register_all(svc: SchedulerService):
     # 物化视图 5 分钟
     svc.add_interval(job_refresh_views, seconds=300, id="refresh_views")
 
+    # 网关新闻采集: 按 poll.group 分档 (仅 _health=verified, 见 runner._filter_sources)
+    async def _gateway_poll(group_name: str | None):
+        from news_gateway.runner import fetch_all_sources
+        try:
+            # 同步阻塞型采集放入线程, 避免卡住调度器事件循环
+            summary = await asyncio.to_thread(
+                fetch_all_sources,
+                config_path="config/sources_config.json",
+                persist=True, print_result=False,
+                healthy_only=True, group=group_name)
+            logger.info("gateway_news[%s]: 抓取 %s | 入库 %s | 错误 %s",
+                        group_name or "refill", summary["total"],
+                        summary["inserted"], len(summary["errors"]))
+            if summary["errors"]:
+                logger.warning("gateway_news[%s] 错误源: %s",
+                               group_name or "refill",
+                               [e["name"] for e in summary["errors"][:10]])
+        except Exception as e:
+            logger.error("gateway_news[%s] 失败: %s", group_name or "refill", e)
+
+    # cn_fast: 交易时段加密 120s; 盘后降频 600s (两 job 互斥窗口)
+    async def cn_fast_day_smart():
+        if in_trading_hours():
+            await _gateway_poll("cn_fast")
+    svc.add_interval(cn_fast_day_smart,
+                     seconds=SCHEDULER.news_cn_fast_day,
+                     id="gateway_cn_fast_day")
+
+    async def cn_fast_off_smart():
+        if not in_trading_hours():
+            await _gateway_poll("cn_fast")
+    svc.add_interval(cn_fast_off_smart,
+                     seconds=SCHEDULER.news_cn_fast_off,
+                     id="gateway_cn_fast_off")
+
+    # media: 常规媒体/全球聚合, 24h 恒定 300s (海外源全天出稿)
+    # 51 源单轮实测 467s 超档 → 拆 3 子组(a/b/c, 各 ~17 源) 错峰, 单轮 ~160s <300s
+    for _mg in ("media_a", "media_b", "media_c"):
+        async def _media_poll(group_name=_mg):
+            await _gateway_poll(group_name)
+        svc.add_interval(_media_poll,
+                         seconds=SCHEDULER.news_media_interval,
+                         id=f"gateway_{_mg}")
+
+    # slow: 低频/社区/垂类, 600s
+    async def slow_smart():
+        await _gateway_poll("slow")
+    svc.add_interval(slow_smart,
+                     seconds=SCHEDULER.news_slow_interval,
+                     id="gateway_slow")
+
+    # 每日 04:00 全量补漏 (兜底白天网络抖动漏采)
+    async def gateway_refill():
+        await _gateway_poll(None)
+    svc.add_cron(gateway_refill, hour=4, minute=0,
+                 id="gateway_news_refill")
+
     # 市场宽度 30 秒 (交易时段)
     async def breadth_smart():
         if in_trading_hours():

@@ -1,0 +1,167 @@
+[
+  {
+    "name": "金十重要",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/jin10/important",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 999,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "东财策略",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Aeastmoney.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "新浪基金",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/sina/finance/jjjlb",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "腾讯财经",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/qq/finance",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "头条股票",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/toutiao/keyword/%E8%82%A1%E7%A5%A8",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "头条A股",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/toutiao/keyword/A%E8%82%A1",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "头条财经",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/toutiao/keyword/%E8%B4%A2%E7%BB%8F",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "微博股票",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/weibo/search/%E8%82%A1%E7%A5%A8",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "知乎股市",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/zhihu/topic/195608",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "雪球热门",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/xueqiu/hots",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "雪球今日话题",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/xueqiu/today",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "东财财经新闻",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/eastmoney/news/cjx",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "东财上市公司",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/eastmoney/news/ssg",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "新浪美股",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/sina/finance/stock",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "财联社移动版",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/cls/telegraph",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  }
+]

@@ -1,0 +1,211 @@
+[
+  {
+    "name": "BBC商业",
+    "type": "standard_rss",
+    "url": "https://feeds.bbci.co.uk/news/business/rss.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 34029,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "BBC科技",
+    "type": "standard_rss",
+    "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 15130,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "AP头条",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Aapnews.com",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 124268,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "AP商业",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Aapnews.com",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 124268,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "FT市场",
+    "type": "ft_rss",
+    "url": "https://www.ft.com/markets?format=rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 11811,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "FT·查询替代",
+    "type": "ft_rss",
+    "url": "https://www.ft.com/markets?format=rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 11811,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "卫报商业",
+    "type": "standard_rss",
+    "url": "https://www.theguardian.com/uk/business/rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 138253,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "Economist",
+    "type": "standard_rss",
+    "url": "https://www.economist.com/finance-and-economics/rss.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 149840,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "Economist商业",
+    "type": "standard_rss",
+    "url": "https://www.economist.com/business/rss.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 146575,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "Bloomberg市场",
+    "type": "standard_rss",
+    "url": "https://feeds.bloomberg.com/markets/news.rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 14871,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "Bloomberg科技",
+    "type": "standard_rss",
+    "url": "https://feeds.bloomberg.com/technology/news.rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 16675,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "HackerNews",
+    "type": "standard_rss",
+    "url": "https://news.ycombinator.com/rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 11402,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "Business Insider",
+    "type": "standard_rss",
+    "url": "https://www.businessinsider.com/rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 272328,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "纽约时报商业",
+    "type": "standard_rss",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 106849,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "华盛顿邮报商业",
+    "type": "standard_rss",
+    "url": "https://feeds.washingtonpost.com/rss/business",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "卫报世界",
+    "type": "standard_rss",
+    "url": "https://www.theguardian.com/world/rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 148118,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "半岛电视台",
+    "type": "standard_rss",
+    "url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 16820,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "NPR商业",
+    "type": "standard_rss",
+    "url": "https://feeds.npr.org/1006/rss.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 14238,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "Reddit经济",
+    "type": "standard_rss",
+    "url": "https://www.reddit.com/r/economics/.rss",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 32522,
+    "issue": null,
+    "issue_type": null
+  }
+]

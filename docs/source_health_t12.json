@@ -1,0 +1,200 @@
+[
+  {
+    "name": "FT中国",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Aftchinese.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "法广中文",
+    "type": "standard_rss",
+    "url": "https://www.rfi.fr/cn/rss",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "ODaily",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/odaily/index",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "区块律动",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/blockbeats/index",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "汽车之家",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Aautohome.com.cn",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "中国证券报",
+    "type": "standard_rss",
+    "url": "https://www.cs.com.cn/sylm/jdxw/rss.xml",
+    "reachable": true,
+    "http": 404,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 404",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "证券日报",
+    "type": "standard_rss",
+    "url": "https://www.zqrb.cn/rss/zqrb-news.xml",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "中国证券网",
+    "type": "standard_rss",
+    "url": "https://www.cnstock.com/rss/headline.xml",
+    "reachable": true,
+    "http": 404,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 404",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "中证要闻",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/cnstock/news/yw",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "证券报焦点",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/cs/jdxw",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "上交所公告",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/sse/news",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "深交所公告",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/szse/news",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "中证指数",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/csindex/news",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "金融界",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/jrj/news/list/qspj",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "中国金融信息",
+    "type": "rsshub_rss",
+    "url": "https://rsshub.rssforever.com/cnfin/news",
+    "reachable": true,
+    "http": 503,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 503",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "一财全球",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Ayicai.com",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "见闻热门",
+    "type": "rsshub_rss",
+    "url": "https://rss.injahow.cn/wallstreetcn/hot",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 54465,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "见闻全球",
+    "type": "rsshub_rss",
+    "url": "https://rss.injahow.cn/wallstreetcn/global-news",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 91835,
+    "issue": null,
+    "issue_type": null
+  }
+]

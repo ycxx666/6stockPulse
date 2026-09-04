@@ -21,6 +21,11 @@ from urllib.parse import urlparse, parse_qs
 
 import aiohttp
 
+# ─── SQLite 新闻数据库 ───
+from infrastructure.database.sqlite_news import (
+    init_db, insert_news_batch, query_news, query_stock_news, get_news_stats, show_recent
+)
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger("standalone")
 
@@ -694,6 +699,123 @@ def generate_analysis(name: str, sector: str, tag: str, direction: str, change_p
     return "".join(parts)
 
 
+# ────────── 新闻采集（集成到独立服务器）──────────
+
+SINA_ZHIBO_URL = "https://zhibo.sina.com.cn/api/zhibo/feed?page={page}&page_size=30&zhibo_id=152&tag=0&dire=f"
+
+
+async def _fetch_and_store_news(pages: int = 3) -> dict:
+    """抓取新浪 7×24 快讯并存入 SQLite"""
+    init_db()
+    rows: list[dict] = []
+    headers = {"Referer": "https://zhibo.sina.com.cn/"}
+
+    async with aiohttp.ClientSession() as session:
+        for page in range(1, pages + 1):
+            url = SINA_ZHIBO_URL.format(page=page)
+            try:
+                async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    data = await resp.json()
+            except Exception as e:
+                logger.warning("新闻第 %d 页请求失败: %s", page, e)
+                continue
+            items = _extract_news_list(data)
+            for item in items:
+                row = _parse_news_item(item)
+                if row:
+                    rows.append(row)
+            await asyncio.sleep(0.5)
+
+    inserted = insert_news_batch(rows) if rows else 0
+    logger.info("新闻采集完成: 抓取 %d 条, 新增 %d 条", len(rows), inserted)
+    return {"collected": len(rows), "inserted": inserted}
+
+
+def _extract_news_list(data: dict) -> list:
+    paths = [
+        ["result", "data", "feed", "list"],
+        ["data", "feed", "list"],
+        ["result", "data", "list"],
+        ["list"],
+    ]
+    for path in paths:
+        cur = data
+        try:
+            for k in path:
+                cur = cur[k]
+            if isinstance(cur, list):
+                return cur
+        except (KeyError, TypeError):
+            continue
+    return []
+
+
+def _parse_news_item(item: dict) -> dict | None:
+    import re as _re
+    try:
+        if not isinstance(item, dict):
+            return None
+        news_id = str(item.get("id") or item.get("news_id") or "").strip()
+        if not news_id:
+            return None
+        rich = item.get("rich_text", "") or ""
+        content = _re.sub(r"<[^>]+>", "", rich or "")
+        content = (content.replace("&nbsp;", " ").replace("&amp;", "&")
+                          .replace("&lt;", "<").replace("&gt;", ">")
+                          .replace("&quot;", '"').strip())
+        if not content:
+            return None
+        title = content[:200]
+        ts = item.get("create_time") or item.get("ctime") or item.get("time")
+        # 时间转 ISO 字符串
+        if ts is None:
+            publish_time = datetime.now().isoformat()
+        elif isinstance(ts, str):
+            for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%S%z"):
+                try:
+                    publish_time = datetime.strptime(ts.replace("Z", "+00:00"), fmt).isoformat()
+                    break
+                except ValueError:
+                    continue
+            else:
+                publish_time = datetime.now().isoformat()
+        elif isinstance(ts, (int, float)):
+            try:
+                publish_time = datetime.fromtimestamp(ts).isoformat()
+            except (ValueError, OSError):
+                publish_time = datetime.now().isoformat()
+        else:
+            publish_time = datetime.now().isoformat()
+        url = (item.get("docurl") or "").strip()
+        source = "新浪财经"
+        sm = _re.search(r"[（(](?:据|来源[：:]?)?([^）)]{1,30})[）)]", content)
+        if sm and sm.group(1).strip() and sm.group(1).strip() != "新华社":
+            source = sm.group(1).strip()
+        category = "other"
+        text = (title or "") + (content or "")
+        if _re.search(r"央行|美联储|降准|降息|通胀|GDP|宏观|经济", text):
+            category = "macro"
+        elif _re.search(r"证监会|监管|政策|法规|发布|印发", text):
+            category = "policy"
+        elif _re.search(r"美股|纳指|标普|美元|黄金|原油|特朗普|美联储", text):
+            category = "global"
+        elif _re.search(r"\d{6}|股票|公司|股份|集团", text):
+            category = "company"
+        return {
+            "news_id": news_id,
+            "title": title,
+            "content": content[:3000],
+            "publish_time": publish_time,
+            "source": source[:50],
+            "source_url": url[:500],
+            "category": category,
+            "crawl_time": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        logger.debug("解析新闻条目失败: %s", e)
+        return None
+
+
 # ────────── HTTP Server ──────────
 class StandaloneHandler(SimpleHTTPRequestHandler):
     """同时托管静态文件 + API 端点"""
@@ -720,6 +842,14 @@ class StandaloneHandler(SimpleHTTPRequestHandler):
             return self._serve_api("tickers", CACHE_TTL["tickers"], fetch_tickers)
         if path == "/health":
             return self._serve_json({"ok": True, "db": "standalone", "realtime": {"running": True}})
+
+        # ── 新闻 API ──
+        if path == "/api/news":
+            return self._serve_news_query()
+        if path == "/api/news/collect":
+            return self._serve_news_collect()
+        if path == "/api/news/stats":
+            return self._serve_news_stats()
 
         # 静态文件
         if path == "/" or path == "":
@@ -773,6 +903,44 @@ class StandaloneHandler(SimpleHTTPRequestHandler):
         except Exception as e:
             self._serve_json({"ok": False, "error": str(e)}, code=500)
 
+    def _serve_news_query(self):
+        """查询新闻 (从 SQLite)"""
+        qs = parse_qs(urlparse(self.path).query)
+        category = qs.get("category", [None])[0]
+        keyword = qs.get("keyword", [None])[0]
+        try:
+            limit = min(int(qs.get("limit", ["30"])[0]), 100)
+            offset = int(qs.get("offset", ["0"])[0])
+        except ValueError:
+            limit, offset = 30, 0
+        try:
+            rows = query_news(category=category, keyword=keyword, limit=limit, offset=offset)
+            self._serve_json({"ok": True, "data": rows, "count": len(rows)})
+        except Exception as e:
+            logger.exception("新闻查询失败")
+            self._serve_json({"ok": False, "error": str(e)}, code=500)
+
+    def _serve_news_collect(self):
+        """触发一次新闻采集"""
+        try:
+            loop = asyncio.new_event_loop()
+            result = loop.run_until_complete(_fetch_and_store_news())
+            loop.close()
+            stats = get_news_stats()
+            result["total_news"] = stats.get("total_news", 0)
+            self._serve_json({"ok": True, **result})
+        except Exception as e:
+            logger.exception("新闻采集失败")
+            self._serve_json({"ok": False, "error": str(e)}, code=500)
+
+    def _serve_news_stats(self):
+        """新闻数据库统计"""
+        try:
+            stats = get_news_stats()
+            self._serve_json({"ok": True, "data": stats})
+        except Exception as e:
+            self._serve_json({"ok": False, "error": str(e)}, code=500)
+
     def log_message(self, fmt, *args):
         # 抑制静态文件日志，只显示 API 调用
         msg = fmt % args if args else fmt
@@ -782,6 +950,13 @@ class StandaloneHandler(SimpleHTTPRequestHandler):
 
 def main():
     port = 8900
+    # 初始化 SQLite 新闻数据库
+    try:
+        init_db()
+        logger.info("SQLite 新闻数据库已就绪: data/news.db")
+    except Exception as e:
+        logger.warning("SQLite 初始化失败: %s", e)
+
     # 预热缓存
     import asyncio as _asyncio
     try:
@@ -798,6 +973,9 @@ def main():
     logger.info("API 端点:")
     logger.info("  GET /api/market/tickers  — 实时行情滚动带")
     logger.info("  GET /api/anomalies       — 异动监测")
+    logger.info("  GET /api/news            — 新闻查询 (?category=&keyword=&limit=)")
+    logger.info("  GET /api/news/collect    — 触发新闻采集")
+    logger.info("  GET /api/news/stats      — 新闻数据库统计")
     logger.info("=" * 50)
     try:
         server.serve_forever()

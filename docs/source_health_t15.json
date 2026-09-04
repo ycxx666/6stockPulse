@@ -1,0 +1,57 @@
+[
+  {
+    "name": "卫报世界",
+    "type": "standard_rss",
+    "url": "https://www.theguardian.com/world/rss",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "半岛电视台",
+    "type": "standard_rss",
+    "url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  },
+  {
+    "name": "NPR商业",
+    "type": "standard_rss",
+    "url": "https://feeds.npr.org/1006/rss.xml",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 14238,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "雅虎财经",
+    "type": "standard_rss",
+    "url": "https://finance.yahoo.com/news/rssindex",
+    "reachable": true,
+    "http": 403,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "HTTP 403",
+    "issue_type": "http-error"
+  },
+  {
+    "name": "Reddit经济",
+    "type": "standard_rss",
+    "url": "https://www.reddit.com/r/economics/.rss",
+    "reachable": false,
+    "http": null,
+    "content_ok": false,
+    "bytes": 0,
+    "issue": "连接超时(8s)",
+    "issue_type": "timeout"
+  }
+]

@@ -1,0 +1,2050 @@
+{
+  "version": "1.0",
+  "_comment": "统一新闻源接入窗口 · 配置驱动 Schema. type ∈ standard_rss / google_news_rss / ft_rss / discover_from_web / rsshub_rss",
+  "global": {
+    "timeout": 15,
+    "retries": 2,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36 6StockPulse/1.0",
+    "request_interval": 1.0,
+    "proxy": "http://127.0.0.1:7897"
+  },
+  "sources": [
+    {
+      "name": "BBC商业",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "feeds.bbci.co.uk/news/business/rss.xml",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "BBC科技",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "feeds.bbci.co.uk/news/technology/rss.xml",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "AP头条",
+      "region": "GLOBAL",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Aapne",
+      "fixes": [
+        "correct_ap_domain"
+      ],
+      "fallback": {},
+      "parser": {
+        "strip_html": true,
+        "html_field": "summary"
+      },
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "AP商业",
+      "region": "GLOBAL",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Aapne",
+      "fixes": [
+        "correct_ap_domain",
+        "append_query",
+        {
+          "_key": "business"
+        }
+      ],
+      "fallback": {},
+      "parser": {
+        "strip_html": true,
+        "html_field": "summary"
+      },
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "CNBC",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+      "fixes": [
+        "strip_trailing_dot"
+      ],
+      "fallback": {
+        "probe_variants": true
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "url 已直改 rss.html(实测200, 无需fallback变体)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "CNBC科技",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.cnbc.com/id/10000664/device/rss/rss.html",
+      "fixes": [
+        "strip_trailing_dot"
+      ],
+      "fallback": {
+        "probe_variants": true
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "url 已直改 rss.html(实测200, 无需fallback变体)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "FT市场",
+      "region": "GLOBAL",
+      "type": "ft_rss",
+      "url": "https://www.ft.com/markets?format=rss",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {
+        "google_news_site_search": "ft.com"
+      },
+      "parser": {
+        "fulltext_enrich": true
+      },
+      "auth": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
+        },
+        "cookies": {
+          "ft-cookie-consent": "1"
+        }
+      },
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "FT·查询替代",
+      "region": "GLOBAL",
+      "type": "ft_rss",
+      "url": "https://www.ft.com/markets?format=rss",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {
+        "google_news_site_search": "ft.com"
+      },
+      "parser": {
+        "fulltext_enrich": true
+      },
+      "auth": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
+        },
+        "cookies": {
+          "ft-cookie-consent": "1"
+        }
+      },
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "WSJ市场",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "feeds.a.dj.com/rss/RSSMarketsMain.xml",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "WSJ商业",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "feeds.a.dj.com/rss/WSJcomUSBusiness.xml",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "卫报商业",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://www.theguardian.com/uk/business/rss",
+      "fixes": [],
+      "fallback": {
+        "google_news_site_search": "theguardian.com"
+      },
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "MarketWatch",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.marketwatch.com/rss/topstories",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "TechCrunch",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://techcrunch.com/feed/",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "The Verge",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.theverge.com/rss/index.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "新华社财经",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "http://www.xinhuanet.com/finance/news_finance.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "华尔街见闻",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/wallstreetcn/news",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_health": "unreachable"
+    },
+    {
+      "name": "财联社电报",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/cls/telegraph",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_health": "unreachable"
+    },
+    {
+      "name": "Economist",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://www.economist.com/finance-and-economics/rss.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "Economist商业",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://www.economist.com/business/rss.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "MarketPulse·查询替代",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.marketpulse.com/feed",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "Bloomberg市场",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://feeds.bloomberg.com/markets/news.rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "Bloomberg科技",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://feeds.bloomberg.com/technology/news.rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "Wired",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.wired.com/feed/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "HackerNews",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://news.ycombinator.com/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "Ars Technica",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://feeds.arstechnica.com/arstechnica/index",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "VentureBeat",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://venturebeat.com/feed/",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "Investing",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://www.investing.com/rss/news.rss",
+      "fixes": [],
+      "fallback": {
+        "google_news_site_search": "investing.com"
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "_comment": "403 反爬 → GNews site:investing.com 自动降级",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "Business Insider",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.businessinsider.com/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "联合早报中国·查询替代",
+      "region": "GLOBAL",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Azaobao.com.sg%2Frealtime%2Fchina",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "Google News 查询源(需海外网络/代理)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "联合早报国际·查询替代",
+      "region": "GLOBAL",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Azaobao.com.sg%2Frealtime%2Fworld",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "Google News 查询源(需海外网络/代理)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "日经中文",
+      "region": "GLOBAL",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Acn.nikkei.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "Google News 查询源(需海外网络/代理)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "纽约时报商业",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "由 news_sources.json 接入(已验证URL)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "华盛顿邮报商业",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://feeds.washingtonpost.com/rss/business",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "洛杉矶时报商业",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.latimes.com/business/rss2.0.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "环球邮报商业",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://www.theglobeandmail.com/arc/outboundfeed/rss/business/",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "unreachable"
+    },
+    {
+      "name": "今日美国",
+      "region": "US",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ausatoday.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "芝加哥论坛报",
+      "region": "US",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Achicagotribune.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "每日电讯报",
+      "region": "GLOBAL",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Atelegraph.co.uk",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "财联社·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Acls.cn",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "东方财富·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Aeastmoney.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "第一财经·查询替代",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/yicai/news",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "迁移到 rss.injahow.cn(实测200)",
+      "_health": "unreachable"
+    },
+    {
+      "name": "36氪·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3A36kr.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "IT之家",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.ithome.com/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "爱范儿",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.ifanr.com/feed",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "少数派",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://sspai.com/feed",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "Solidot",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.solidot.org/index.rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "凤凰财经·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Afinance.ifeng.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "证券时报·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Astcn.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "界面·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ajiemian.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "每日经济·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Anbd.com.cn",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "澎湃财经·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Athepaper.cn",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "中国金融·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Acnfin.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "和讯财经·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ahexun.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "极客公园·查询替代",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.geekpark.net/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=verified",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "钛媒体官方",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.tmtpost.com/feed",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "虎嗅·查询替代",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ahuxiu.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "人人都是产品",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.woshipm.com/feed",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "雷锋网",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.leiphone.com/feed",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "财新",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/caixin/latest",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "澎湃新闻",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/thepaper/featured",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "雪球今日",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/xueqiu/today",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "见闻实时",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/wallstreetcn/live/global",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "金十数据",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/jin10/news",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "格隆汇",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/gelonghui/article",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "界面新闻",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ajiemian.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "虎嗅",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ahuxiu.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "极客公园",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.geekpark.net/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "微博热搜",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/weibo/search/hot",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "知乎热榜",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/zhihu/hotlist",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "迁移到 rss.injahow.cn(实测200)",
+      "_health": "unreachable"
+    },
+    {
+      "name": "百度热搜",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/baidu/hot",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "今日头条",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/toutiao/hot",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "小红书热点",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/xiaohongshu/board/hotsearch",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "小红书热点(备)",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.app/xiaohongshu/board/hotsearch",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "X海外热点",
+      "region": "GLOBAL",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/twitter/trends/1",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "X海外热点(备)",
+      "region": "GLOBAL",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.app/twitter/trends/1",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "凤凰资讯",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://feed.ifeng.com/rss/news/index.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "凤凰科技",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/ifeng/tech",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "InfoQ",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.infoq.cn/feed",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "开源中国",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.oschina.net/news/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "掘金前端",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ajuejin.cn",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "掘金后端",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/juejin/category/backend",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "BBC中文",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_a"
+      }
+    },
+    {
+      "name": "德国之声",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://rss.dw.com/xml/rss-chi-all",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "纽时中国",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Acn.nytimes.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "FT中国",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Aftchinese.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "法广中文",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.rfi.fr/cn/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "ODaily",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/odaily/index",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "区块律动",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/blockbeats/index",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "汽车之家",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Aautohome.com.cn",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "slow"
+      }
+    },
+    {
+      "name": "中国证券报",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site:cs.com.cn",
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok | 已禁用: 官方cs.com.cn RSS 404，rsshub轮换亦不可得",
+      "enabled": false,
+      "_health": "paused",
+      "_comment": "官方 RSS 404 → GNews site 兜底(需代理)"
+    },
+    {
+      "name": "证券日报",
+      "region": "CN",
+      "type": "standard_rss",
+      "url": "https://www.zqrb.cn/rss/zqrb-news.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "中国证券网",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site:cnstock.com",
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok | 已禁用: 官方cnstock.com RSS 404，rsshub轮换亦不可得",
+      "_health": "verified",
+      "_comment": "官方 RSS 404 → GNews site 兜底(需代理)",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "中证要闻",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/cnstock/news/yw",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "证券报焦点",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/cs/jdxw",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "上交所公告",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/sse/news",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "深交所公告",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/szse/news",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "中证指数",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/csindex/news",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "金融界",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/jrj/news/list/qspj",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "中国金融信息",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/cnfin/news",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "一财全球",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Ayicai.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "见闻热门",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/wallstreetcn/hot",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "见闻全球",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rss.injahow.cn/wallstreetcn/global-news",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "金十重要",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/jin10/important",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "东财策略",
+      "region": "CN",
+      "type": "google_news_rss",
+      "url": "https://news.google.com/rss/search?q=site%3Aeastmoney.com",
+      "fixes": [],
+      "fallback": {},
+      "parser": {
+        "strip_html": true
+      },
+      "auth": {},
+      "_note": "自news_sources.json接入 status=needs-proxy",
+      "_health": "verified",
+      "poll": {
+        "group": "cn_fast"
+      }
+    },
+    {
+      "name": "新浪基金",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/sina/finance/jjjlb",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "腾讯财经",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/qq/finance",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "头条股票",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/toutiao/keyword/%E8%82%A1%E7%A5%A8",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "头条A股",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/toutiao/keyword/A%E8%82%A1",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "头条财经",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/toutiao/keyword/%E8%B4%A2%E7%BB%8F",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "微博股票",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/weibo/search/%E8%82%A1%E7%A5%A8",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "知乎股市",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/zhihu/topic/195608",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "雪球热门",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/xueqiu/hots",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "雪球今日话题",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/xueqiu/today",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "东财财经新闻",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/eastmoney/news/cjx",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "东财上市公司",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/eastmoney/news/ssg",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "新浪美股",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/sina/finance/stock",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "财联社移动版",
+      "region": "CN",
+      "type": "rsshub_rss",
+      "url": "https://rsshub.rssforever.com/cls/telegraph",
+      "fixes": [],
+      "fallback": {
+        "hosts": [
+          "rss.injahow.cn"
+        ]
+      },
+      "parser": {},
+      "auth": {},
+      "_note": "自news_sources.json接入 status=ok",
+      "_health": "unreachable"
+    },
+    {
+      "name": "卫报世界",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://www.theguardian.com/world/rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "lang": "en",
+      "_note": "用户新增源(URL完整)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "半岛电视台",
+      "region": "GLOBAL",
+      "type": "standard_rss",
+      "url": "https://www.aljazeera.com/xml/rss/all.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "lang": "en",
+      "_note": "用户新增源(URL完整)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "NPR商业",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://feeds.npr.org/1006/rss.xml",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "lang": "en",
+      "_note": "用户新增源(URL完整)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "雅虎财经",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://finance.yahoo.com/news/rssindex",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "lang": "en",
+      "_note": "用户新增源(URL完整)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_c"
+      }
+    },
+    {
+      "name": "Reddit经济",
+      "region": "US",
+      "type": "standard_rss",
+      "url": "https://www.reddit.com/r/economics/.rss",
+      "fixes": [],
+      "fallback": {},
+      "parser": {},
+      "auth": {},
+      "lang": "en",
+      "_note": "用户新增源(URL完整)",
+      "_health": "verified",
+      "poll": {
+        "group": "media_b"
+      }
+    },
+    {
+      "name": "雪球热门-直连",
+      "region": "CN",
+      "type": "social_hot_json",
+      "url": "https://xueqiu.com/statuses/hot/listV2.json?since_id=-1&max_id=-1&size=15",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {},
+      "parser": {
+        "list_path": "data.items",
+        "fields": {
+          "id": "id",
+          "title": "text"
+        },
+        "title_len": 60,
+        "link_prefix": "https://xueqiu.com/"
+      },
+      "auth": {},
+      "_health": "paused",
+      "_comment": "已搁置 2026-09-04: 直连需登录态cookie(用户无法维护,过期麻烦)。自动化替代路径(供未来选择): ①Playwright无头匿名执行WAF JS后走主域listV2; ②stock.xueqiu.com/v5需真实登录不可取; ③等价内容源(新浪7x24/东财/见闻/金十); ④公共rsshub实例恢复后原rsshub_rss源自动复活",
+      "enabled": false
+    },
+    {
+      "name": "微博热搜-直连",
+      "region": "CN",
+      "type": "social_hot_json",
+      "url": "https://weibo.com/ajax/side/hotSearch",
+      "fixes": [
+        "ensure_scheme"
+      ],
+      "fallback": {},
+      "parser": {
+        "list_path": "data.realtime",
+        "fields": {
+          "title": "word"
+        },
+        "title_len": 60,
+        "link_tpl": "https://s.weibo.com/weibo?q=%s"
+      },
+      "auth": {
+        "cookies_file": "config/cookies/weibo.txt",
+        "headers": {
+          "Referer": "https://weibo.com/",
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      },
+      "_health": "paused",
+      "_comment": "批2灰度: 微博热搜直连(实测 ok:1, SUB cookie 有效, 2026-09-04)",
+      "enabled": false
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+[
+  {
+    "name": "联合早报中国·查询替代",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Azaobao.com.sg%2Frealtime%2Fchina",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 1160,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "联合早报国际·查询替代",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Azaobao.com.sg%2Frealtime%2Fworld",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 1160,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "日经中文",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Acn.nikkei.com",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 1130,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "今日美国",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Ausatoday.com",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 124484,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "芝加哥论坛报",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Achicagotribune.com",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 118279,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "每日电讯报",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Atelegraph.co.uk",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 122184,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "纽时中国",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Acn.nytimes.com",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 87936,
+    "issue": null,
+    "issue_type": null
+  },
+  {
+    "name": "FT中国",
+    "type": "google_news_rss",
+    "url": "https://news.google.com/rss/search?q=site%3Aftchinese.com",
+    "reachable": true,
+    "http": 200,
+    "content_ok": true,
+    "bytes": 87161,
+    "issue": null,
+    "issue_type": null
+  }
+]

@@ -1,0 +1,836 @@
+{
+  "description": "6StockPulse 新闻聚合源清单 — 从用户提供的 487 行文本整理",
+  "version": "1.0",
+  "generated": "2026-07-28",
+  "total_sources": 127,
+  "status_legend": {
+    "verified": "实测返回 HTTP 200 且内容为 RSS/XML",
+    "ok": "官方标准格式(URL本身正确)，本机网络受限未实测",
+    "incomplete": "URL 被截断，无法推断结尾，需人工补全",
+    "needs-proxy": "需海外网络/代理访问(如 Google News)"
+  },
+  "sources": [
+    {
+      "region": "GLOBAL",
+      "name": "BBC商业",
+      "url": "https://feeds.bbci.co.uk/news/business/rss.xml",
+      "status": "ok",
+      "note": "BBC官方RSS格式，本机网络不可达(需海外/代理)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "BBC科技",
+      "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+      "status": "ok",
+      "note": "BBC官方RSS格式，本机网络不可达(需海外/代理)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "BBC世界",
+      "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "status": "ok",
+      "note": "BBC官方RSS格式，本机网络不可达(需海外/代理)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "AP商业",
+      "url": "https://news.google.com/rss/search?q=site%3Aapnews.com",
+      "status": "needs-proxy",
+      "note": "Google News需海外网络; AP官方index.rss实测401需授权"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "AP科技",
+      "url": "https://news.google.com/rss/search?q=site%3Aapnews.com",
+      "status": "needs-proxy",
+      "note": "Google News需海外网络; 原URL截断于site:apnews.com"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "AP头条",
+      "url": "https://news.google.com/rss/search?q=site%3Aapnews.com",
+      "status": "needs-proxy",
+      "note": "Google News需海外网络; 原URL截断于site:apnews.com"
+    },
+    {
+      "region": "US",
+      "name": "WSJ市场",
+      "url": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+      "status": "verified",
+      "note": "实测HTTP 200 application/rss+xml"
+    },
+    {
+      "region": "US",
+      "name": "WSJ商业",
+      "url": "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml",
+      "status": "verified",
+      "note": "实测HTTP 200 application/rss+xml"
+    },
+    {
+      "region": "US",
+      "name": "WSJ科技",
+      "url": "https://feeds.a.dj.com/rss/RSSWSJD.xml",
+      "status": "verified",
+      "note": "实测HTTP 200 application/rss+xml"
+    },
+    {
+      "region": "US",
+      "name": "CNBC",
+      "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+      "status": "verified",
+      "note": "正确后缀为.html(非.xml)，实测HTTP 200 XML"
+    },
+    {
+      "region": "US",
+      "name": "CNBC科技",
+      "url": "https://www.cnbc.com/id/10000664/device/rss/rss.html",
+      "status": "verified",
+      "note": "正确后缀为.html(非.xml)，实测HTTP 200 XML"
+    },
+    {
+      "region": "US",
+      "name": "CNBC财经",
+      "url": "https://www.cnbc.com/id/10001009/device/rss/rss.html",
+      "status": "verified",
+      "note": "正确后缀为.html(非.xml)，实测HTTP 200 XML"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "FT·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Aft.com",
+      "status": "needs-proxy",
+      "note": "Google News需海外网络; 原URL截断于site:ft.com"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "FT市场",
+      "url": "https://www.ft.com/markets?format=rss",
+      "status": "ok",
+      "note": "FT官方format=rss格式，本机网络不可达(需海外/代理)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "Economist",
+      "url": "https://www.economist.com/finance-and-economics/rss.xml",
+      "status": "ok",
+      "note": "官方RSS路径 finance-and-economics/rss.xml"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "Economist商业",
+      "url": "https://www.economist.com/business/rss.xml",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "MarketWatch",
+      "url": "https://www.marketwatch.com/rss/topstories",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "MarketPulse·查询替代",
+      "url": "https://www.marketpulse.com/feed",
+      "status": "verified",
+      "note": "已发现官方feed, 无需Google查询(上一轮确认)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "Bloomberg市场",
+      "url": "https://feeds.bloomberg.com/markets/news.rss",
+      "status": "ok"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "Bloomberg科技",
+      "url": "https://feeds.bloomberg.com/technology/news.rss",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "The Verge",
+      "url": "https://www.theverge.com/rss/index.xml",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/feed/",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "Wired",
+      "url": "https://www.wired.com/feed/rss",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "HackerNews",
+      "url": "https://news.ycombinator.com/rss",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "Ars Technica",
+      "url": "https://feeds.arstechnica.com/arstechnica/index",
+      "status": "verified",
+      "note": "实测200: 正确路径是 /index (原URL截断于/techno)"
+    },
+    {
+      "region": "US",
+      "name": "VentureBeat",
+      "url": "https://venturebeat.com/feed/",
+      "status": "verified",
+      "note": "官方feed /feed/ 替代废弃的feedburner(上一轮确认)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "Investing",
+      "url": "https://www.investing.com/rss/news.rss",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "Business Insider",
+      "url": "https://www.businessinsider.com/rss",
+      "status": "ok"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "联合早报中国·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Azaobao.com.sg%2Frealtime%2Fchina",
+      "status": "needs-proxy",
+      "note": "官方rss被反爬(返回HTML)，改用Google查询site:zaobao.com.sg"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "联合早报国际·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Azaobao.com.sg%2Frealtime%2Fworld",
+      "status": "needs-proxy",
+      "note": "官方rss被反爬，改用Google查询"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "日经中文",
+      "url": "https://news.google.com/rss/search?q=site%3Acn.nikkei.com",
+      "status": "needs-proxy",
+      "note": "补全域名cn.nikkei.com"
+    },
+    {
+      "region": "US",
+      "name": "纽约时报商业",
+      "url": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
+      "status": "ok",
+      "note": "NYT官方RSS标准路径，本机不可达需代理"
+    },
+    {
+      "region": "US",
+      "name": "华盛顿邮报商业",
+      "url": "https://feeds.washingtonpost.com/rss/business",
+      "status": "ok"
+    },
+    {
+      "region": "US",
+      "name": "洛杉矶时报商业",
+      "url": "https://www.latimes.com/business/rss2.0.xml",
+      "status": "ok"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "卫报商业",
+      "url": "https://www.theguardian.com/uk/business/rss",
+      "status": "ok"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "环球邮报商业",
+      "url": "https://www.theglobeandmail.com/arc/outboundfeed/rss/business/",
+      "status": "needs-proxy",
+      "note": "原URL截断于/arc/outboundfeed，补全为rss/business/需验证"
+    },
+    {
+      "region": "US",
+      "name": "今日美国",
+      "url": "https://news.google.com/rss/search?q=site%3Ausatoday.com",
+      "status": "needs-proxy",
+      "note": "官方RSS实测403，改用Google查询"
+    },
+    {
+      "region": "US",
+      "name": "芝加哥论坛报",
+      "url": "https://news.google.com/rss/search?q=site%3Achicagotribune.com",
+      "status": "needs-proxy",
+      "note": "官方RSS实测403，改用Google查询"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "每日电讯报",
+      "url": "https://news.google.com/rss/search?q=site%3Atelegraph.co.uk",
+      "status": "needs-proxy",
+      "note": "官方RSS实测402(付费)，改用Google查询"
+    },
+    {
+      "region": "CN",
+      "name": "财联社·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Acls.cn",
+      "status": "needs-proxy",
+      "note": "补全域名cls.cn"
+    },
+    {
+      "region": "CN",
+      "name": "东方财富·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Aeastmoney.com",
+      "status": "needs-proxy",
+      "note": "补全域名eastmoney.com"
+    },
+    {
+      "region": "CN",
+      "name": "第一财经·查询替代",
+      "url": "https://rsshub.rssforever.com/yicai/news",
+      "status": "verified",
+      "note": "实测200: rsshub第一财经路由可用, 替代Google查询"
+    },
+    {
+      "region": "CN",
+      "name": "36氪·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3A36kr.com",
+      "status": "needs-proxy",
+      "note": "补全域名36kr.com"
+    },
+    {
+      "region": "CN",
+      "name": "IT之家",
+      "url": "https://www.ithome.com/rss",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "爱范儿",
+      "url": "https://www.ifanr.com/feed",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "少数派",
+      "url": "https://sspai.com/feed",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "Solidot",
+      "url": "https://www.solidot.org/index.rss",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "新华社财经",
+      "url": "https://www.xinhuanet.com/finance/news_finance.xml",
+      "status": "verified",
+      "note": "实测200: 补全 .xml 后缀"
+    },
+    {
+      "region": "CN",
+      "name": "凤凰财经·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Afinance.ifeng.com",
+      "status": "needs-proxy",
+      "note": "官方rss 404，补全域名"
+    },
+    {
+      "region": "CN",
+      "name": "证券时报·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Astcn.com",
+      "status": "needs-proxy",
+      "note": "官方rss 404，补全域名"
+    },
+    {
+      "region": "CN",
+      "name": "界面·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Ajiemian.com",
+      "status": "needs-proxy",
+      "note": "补全域名jiemian.com"
+    },
+    {
+      "region": "CN",
+      "name": "每日经济·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Anbd.com.cn",
+      "status": "needs-proxy",
+      "note": "官方rss 404，补全域名"
+    },
+    {
+      "region": "CN",
+      "name": "澎湃财经·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Athepaper.cn",
+      "status": "needs-proxy",
+      "note": "官方/rss重定向首页，改用Google查询"
+    },
+    {
+      "region": "CN",
+      "name": "中国金融·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Acnfin.com",
+      "status": "needs-proxy",
+      "note": "补全域名cnfin.com"
+    },
+    {
+      "region": "CN",
+      "name": "和讯财经·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Ahexun.com",
+      "status": "needs-proxy",
+      "note": "官方feed.hexun.com DNS错误，改用Google查询"
+    },
+    {
+      "region": "CN",
+      "name": "极客公园·查询替代",
+      "url": "https://www.geekpark.net/rss",
+      "status": "verified",
+      "note": "官方RSS实测200，与'极客公园'条目同URL"
+    },
+    {
+      "region": "CN",
+      "name": "钛媒体官方",
+      "url": "https://www.tmtpost.com/feed",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "虎嗅·查询替代",
+      "url": "https://news.google.com/rss/search?q=site%3Ahuxiu.com",
+      "status": "needs-proxy",
+      "note": "官方/rss被阿里云WAF拦截，改用Google查询"
+    },
+    {
+      "region": "CN",
+      "name": "人人都是产品",
+      "url": "https://www.woshipm.com/feed",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "雷锋网",
+      "url": "https://www.leiphone.com/feed",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "财新",
+      "url": "https://rss.injahow.cn/caixin/latest",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "澎湃新闻",
+      "url": "https://rss.injahow.cn/thepaper/featured",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "雪球今日",
+      "url": "https://rsshub.rssforever.com/xueqiu/today",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "华尔街见闻",
+      "url": "https://rss.injahow.cn/wallstreetcn/news",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "见闻实时",
+      "url": "https://rss.injahow.cn/wallstreetcn/live/global",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "金十数据",
+      "url": "https://rsshub.rssforever.com/jin10/news",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "格隆汇",
+      "url": "https://rsshub.rssforever.com/gelonghui/article",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "界面新闻",
+      "url": "https://news.google.com/rss/search?q=site%3Ajiemian.com",
+      "status": "needs-proxy",
+      "note": "补全域名jiemian.com"
+    },
+    {
+      "region": "CN",
+      "name": "虎嗅",
+      "url": "https://news.google.com/rss/search?q=site%3Ahuxiu.com",
+      "status": "needs-proxy",
+      "note": "官方/rss被WAF拦截，改用Google查询"
+    },
+    {
+      "region": "CN",
+      "name": "极客公园",
+      "url": "https://www.geekpark.net/rss",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "微博热搜",
+      "url": "https://rsshub.rssforever.com/weibo/search/hot",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "知乎热榜",
+      "url": "https://rsshub.rssforever.com/zhihu/hotlist",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "百度热搜",
+      "url": "https://rsshub.rssforever.com/baidu/hot",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "今日头条",
+      "url": "https://rsshub.rssforever.com/toutiao/hot",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "小红书热点",
+      "url": "https://rsshub.rssforever.com/xiaohongshu/board/hotsearch",
+      "status": "ok",
+      "note": "rsshub路由补全(与备选rsshub.app同路径)"
+    },
+    {
+      "region": "CN",
+      "name": "小红书热点(备)",
+      "url": "https://rsshub.app/xiaohongshu/board/hotsearch",
+      "status": "ok"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "X海外热点",
+      "url": "https://rsshub.rssforever.com/twitter/trends/1",
+      "status": "ok"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "X海外热点(备)",
+      "url": "https://rsshub.app/twitter/trends/1",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "凤凰资讯",
+      "url": "https://feed.ifeng.com/rss/news/index.xml",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "凤凰科技",
+      "url": "https://rsshub.rssforever.com/ifeng/tech",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "InfoQ",
+      "url": "https://www.infoq.cn/feed",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "开源中国",
+      "url": "https://www.oschina.net/news/rss",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "V2EX",
+      "url": "https://www.v2ex.com/index.xml",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "掘金前端",
+      "url": "https://news.google.com/rss/search?q=site%3Ajuejin.cn",
+      "status": "needs-proxy",
+      "note": "补全域名juejin.cn"
+    },
+    {
+      "region": "CN",
+      "name": "掘金后端",
+      "url": "https://rss.injahow.cn/juejin/category/backend",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "BBC中文",
+      "url": "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "德国之声",
+      "url": "https://rss.dw.com/xml/rss-chi-all",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "纽时中国",
+      "url": "https://news.google.com/rss/search?q=site%3Acn.nytimes.com",
+      "status": "needs-proxy",
+      "note": "补全域名cn.nytimes.com"
+    },
+    {
+      "region": "CN",
+      "name": "FT中国",
+      "url": "https://news.google.com/rss/search?q=site%3Aftchinese.com",
+      "status": "needs-proxy",
+      "note": "FT中文网域名ftchinese.com"
+    },
+    {
+      "region": "CN",
+      "name": "法广中文",
+      "url": "https://www.rfi.fr/cn/rss",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "ODaily",
+      "url": "https://rsshub.rssforever.com/odaily/index",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "区块律动",
+      "url": "https://rsshub.rssforever.com/blockbeats/index",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "汽车之家",
+      "url": "https://news.google.com/rss/search?q=site%3Aautohome.com.cn",
+      "status": "needs-proxy",
+      "note": "补全域名autohome.com.cn"
+    },
+    {
+      "region": "CN",
+      "name": "中国证券报",
+      "url": "https://www.cs.com.cn/sylm/jdxw/rss.xml",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "证券日报",
+      "url": "https://www.zqrb.cn/rss/zqrb-news.xml",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "中国证券网",
+      "url": "https://www.cnstock.com/rss/headline.xml",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "中证要闻",
+      "url": "https://rsshub.rssforever.com/cnstock/news/yw",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "证券报焦点",
+      "url": "https://rsshub.rssforever.com/cs/jdxw",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "上交所公告",
+      "url": "https://rsshub.rssforever.com/sse/news",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "深交所公告",
+      "url": "https://rsshub.rssforever.com/szse/news",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "中证指数",
+      "url": "https://rsshub.rssforever.com/csindex/news",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "金融界",
+      "url": "https://rsshub.rssforever.com/jrj/news/list/qspj",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "中国金融信息",
+      "url": "https://rsshub.rssforever.com/cnfin/news",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "一财全球",
+      "url": "https://news.google.com/rss/search?q=site%3Ayicai.com",
+      "status": "needs-proxy",
+      "note": "补全域名yicai.com(或改用rsshub yicai/news)"
+    },
+    {
+      "region": "CN",
+      "name": "财联社电报",
+      "url": "https://rsshub.rssforever.com/cls/telegraph",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "见闻热门",
+      "url": "https://rss.injahow.cn/wallstreetcn/hot",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "见闻全球",
+      "url": "https://rss.injahow.cn/wallstreetcn/global-news",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "金十重要",
+      "url": "https://rsshub.rssforever.com/jin10/important",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "东财策略",
+      "url": "https://news.google.com/rss/search?q=site%3Aeastmoney.com",
+      "status": "needs-proxy",
+      "note": "补全域名eastmoney.com"
+    },
+    {
+      "region": "CN",
+      "name": "新浪基金",
+      "url": "https://rsshub.rssforever.com/sina/finance/jjjlb",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "腾讯财经",
+      "url": "https://rsshub.rssforever.com/qq/finance",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "头条股票",
+      "url": "https://rsshub.rssforever.com/toutiao/keyword/%E8%82%A1%E7%A5%A8",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "头条A股",
+      "url": "https://rsshub.rssforever.com/toutiao/keyword/A%E8%82%A1",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "头条财经",
+      "url": "https://rsshub.rssforever.com/toutiao/keyword/%E8%B4%A2%E7%BB%8F",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "微博股票",
+      "url": "https://rsshub.rssforever.com/weibo/search/%E8%82%A1%E7%A5%A8",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "知乎股市",
+      "url": "https://rsshub.rssforever.com/zhihu/topic/195608",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "雪球热门",
+      "url": "https://rsshub.rssforever.com/xueqiu/hots",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "雪球今日话题",
+      "url": "https://rsshub.rssforever.com/xueqiu/today",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "东财财经新闻",
+      "url": "https://rsshub.rssforever.com/eastmoney/news/cjx",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "东财上市公司",
+      "url": "https://rsshub.rssforever.com/eastmoney/news/ssg",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "新浪美股",
+      "url": "https://rsshub.rssforever.com/sina/finance/stock",
+      "status": "ok"
+    },
+    {
+      "region": "CN",
+      "name": "财联社移动版",
+      "url": "https://rsshub.rssforever.com/cls/telegraph",
+      "status": "ok",
+      "note": "rsshub路由补全为/cls/telegraph(与财联社电报同源)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "卫报世界",
+      "url": "https://www.theguardian.com/world/rss",
+      "status": "ok",
+      "lang": "en",
+      "note": "用户新增源(URL完整)"
+    },
+    {
+      "region": "GLOBAL",
+      "name": "半岛电视台",
+      "url": "https://www.aljazeera.com/xml/rss/all.xml",
+      "status": "ok",
+      "lang": "en",
+      "note": "用户新增源(URL完整)"
+    },
+    {
+      "region": "US",
+      "name": "NPR商业",
+      "url": "https://feeds.npr.org/1006/rss.xml",
+      "status": "ok",
+      "lang": "en",
+      "note": "用户新增源(URL完整)"
+    },
+    {
+      "region": "US",
+      "name": "雅虎财经",
+      "url": "https://finance.yahoo.com/news/rssindex",
+      "status": "ok",
+      "lang": "en",
+      "note": "用户新增源(URL完整)"
+    },
+    {
+      "region": "US",
+      "name": "Reddit经济",
+      "url": "https://www.reddit.com/r/economics/.rss",
+      "status": "ok",
+      "lang": "en",
+      "note": "用户新增源(URL完整)"
+    }
+  ]
+}
