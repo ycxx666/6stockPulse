@@ -93,10 +93,11 @@ class BaseCrawler:
             except (aiohttp.ClientError, asyncio.TimeoutError) as e:
                 last_err = e
                 backoff = (CRAWLER.backoff_factor ** attempt) + random.uniform(0, 1)
-                logger.warning("[%s] 第%d次请求失败: %s, 等待%.1fs",
-                               self.name, attempt + 1, e, backoff)
+                # 中间重试降为 debug:新浪/东财通道偶发断连属已知现象,避免刷屏噪音
+                logger.debug("[%s] 第%d次请求失败: %s, 等待%.1fs",
+                             self.name, attempt + 1, e, backoff)
                 await asyncio.sleep(backoff)
-        logger.error("[%s] %d 次重试后仍失败: %s", self.name, CRAWLER.max_retries, last_err)
+        logger.warning("[%s] %d 次重试后仍失败: %s", self.name, CRAWLER.max_retries, last_err)
         return None
 
     # ────── 工具 ──────
