@@ -276,7 +276,7 @@
             <div class="panel-meta">11:50</div>
           </div>
           <div class="signal-context"><span id="signalCtx"><b class="yellow-text">● 信号复盘</b>　机会 / 风险</span><span id="signalTime">实时</span></div>
-          <div class="signal-tabs"><div class="signal-tab active" data-dir="up">↑ 机会挖掘</div><div class="signal-tab" data-dir="down">↓ 风险提醒</div></div>
+          <div class="signal-tabs"><div class="signal-tab active" data-dir="up">↑ 机会挖掘 <span id="sigCntUp" style="display:inline-block;min-width:16px;padding:0 4px;margin-left:4px;border-radius:8px;background:rgba(255,255,255,.08);font-size:9px;font-family:var(--font-mono)">0</span></div><div class="signal-tab" data-dir="down">↓ 风险提醒 <span id="sigCntDown" style="display:inline-block;min-width:16px;padding:0 4px;margin-left:4px;border-radius:8px;background:rgba(255,255,255,.08);font-size:9px;font-family:var(--font-mono)">0</span></div></div>
           <div class="analysis-card" id="signalCard"><div class="list-empty">暂无信号 · 交易日盘中由信号引擎自动生成</div></div>
           <div class="news-filter"><span class="active" data-nf="all">全球热点</span><span data-nf="bull">利好资讯</span></div>
           <div class="news-list scrollable" id="newsList"></div>
@@ -527,34 +527,59 @@
     }
 
     // ── 信号复盘: 机会 / 风险 tab 切换 ──
+    // 兼容后端两种口径:signal_type=opportunity|risk 与 direction=bullish|bearish(旧为 up/down)
     let sigDir = 'up';
+    let sigAll = [];
+    const _OPP_DIR = ['up', 'bullish', 'bull', 'long', 'positive'];
+    const _RISK_DIR = ['down', 'bearish', 'bear', 'short', 'negative'];
+    function sigIsOpp(s){
+      const t = String((s && s.signal_type) || '').toLowerCase();
+      if (t === 'opportunity') return true;
+      if (t === 'risk') return false;
+      return _OPP_DIR.includes(String((s && s.direction) || '').toLowerCase());
+    }
+    function sigIsRisk(s){
+      const t = String((s && s.signal_type) || '').toLowerCase();
+      if (t === 'risk') return true;
+      if (t === 'opportunity') return false;
+      return _RISK_DIR.includes(String((s && s.direction) || '').toLowerCase());
+    }
     async function loadSignals(){
       try {
-        const list = await fetchJson(CONFIG.endpoints.signals + '?limit=10');
-        const arr = Array.isArray(list) ? list : [];
-        renderSignals(arr);
-        setSignalFooter(arr);
+        const list = await fetchJson(CONFIG.endpoints.signals + '?limit=20');
+        sigAll = Array.isArray(list) ? list : [];
+        renderSignals();
+        setSignalFooter(sigAll);
       } catch(e) {
+        sigAll = [];
         setHtmlIfChanged(document.getElementById('signalCard'), '<div class="list-empty">信号服务暂不可用</div>');
       }
     }
-    function renderSignals(list){
+    function renderSignals(){
       const card = document.getElementById('signalCard'); if (!card) return;
-      const arr = (list || []).filter(s => s.direction === sigDir);
+      const opp = sigAll.filter(sigIsOpp), risk = sigAll.filter(sigIsRisk);
+      setTextIfChanged(document.getElementById('sigCntUp'), String(opp.length));
+      setTextIfChanged(document.getElementById('sigCntDown'), String(risk.length));
       const tEl = document.getElementById('signalTime');
-      if (tEl) setTextIfChanged(tEl, (list && list[0] && list[0].generated_at) ? '实时 ' + String(list[0].generated_at).slice(11, 16) : '实时');
+      if (tEl) setTextIfChanged(tEl, (sigAll[0] && sigAll[0].generated_at) ? '实时 ' + String(sigAll[0].generated_at).slice(11, 16) : '实时');
+      const arr = sigDir === 'up' ? opp : risk;
       if (!arr.length) {
         setHtmlIfChanged(card, `<div class="list-empty">暂无${sigDir === 'up' ? '机会' : '风险'}信号 · 交易日盘中自动生成</div>`);
         return;
       }
-      setHtmlIfChanged(card, arr.slice(0, 5).map((s, i, all) => `
+      const sevTxt = { info: '信息', warning: '提示', critical: '严重' };
+      const sevCls = { info: '', warning: 'yellow-text', critical: 'red-text' };
+      setHtmlIfChanged(card, arr.slice(0, 6).map((s, i, all) => {
+        const sev = String(s.severity || 'info').toLowerCase();
+        return `
         <div style="padding:8px 0;border-bottom:${i < all.length - 1 ? '1px solid rgba(68,129,158,.08)' : 'none'}">
           <div class="analysis-head" style="margin-bottom:5px">
-            <div class="analysis-title">${s.direction === 'down' ? '▼ 风险' : '▲ 机会'} · ${escapeHtml(s.title || '信号')}</div>
-            <div class="panel-meta">${String(s.generated_at || '').slice(11, 16)} · 置信 ${Math.round((Number(s.confidence) || 0) * 100)}%</div>
+            <div class="analysis-title">${sigDir === 'up' ? '▲ 机会' : '▼ 风险'} · ${escapeHtml(s.title || '信号')}</div>
+            <div class="panel-meta"><span class="${sevCls[sev] || ''}">${sevTxt[sev] || escapeHtml(sev)}</span> · ${String(s.generated_at || '').slice(11, 16)} · 置信 ${Math.round((Number(s.confidence) || 0) * 100)}%</div>
           </div>
-          <div class="analysis-body" style="font-size:10px;line-height:1.6">${escapeHtml(String(s.summary || s.evidence || '').slice(0, 160))}</div>
-        </div>`).join(''));
+          <div class="analysis-body" style="font-size:10px;line-height:1.6">${escapeHtml(String(s.summary || s.evidence || '').slice(0, 180))}</div>
+        </div>`;
+      }).join(''));
     }
     function setSignalFooter(list){
       const main = document.getElementById('sigMain'), sub = document.getElementById('sigSub');
@@ -564,8 +589,9 @@
         return;
       }
       const first = list[0];
-      if (main) { setTextIfChanged(main, String(first.title || '').slice(0, 16)); main.className = first.direction === 'down' ? 'green-text' : 'red-text'; }
-      if (sub) setTextIfChanged(sub, `${first.direction === 'down' ? '风险' : '机会'}信号 · 共 ${list.length} 条`);
+      const isRisk = sigIsRisk(first);
+      if (main) { setTextIfChanged(main, String(first.title || '').slice(0, 16)); main.className = isRisk ? 'green-text' : 'red-text'; }
+      if (sub) setTextIfChanged(sub, `${isRisk ? '风险' : '机会'}信号 · 共 ${list.length} 条`);
     }
 
     // ── 赚钱效应 (昨日涨停今日表现) ──
@@ -896,7 +922,7 @@
         document.querySelectorAll('.signal-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         sigDir = tab.dataset.dir || 'up';
-        loadSignals();
+        renderSignals();  // 本地切换分类(数据已在 sigAll);避免重复请求
       });
     });
     // 板块资金流: 概念/行业 tab 切换
