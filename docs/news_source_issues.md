@@ -48,12 +48,12 @@ AP头条 · AP商业 · 联合早报中国/国际 · 日经中文 · 今日美�
 
 ## 三、待统一处理动作
 
-- [ ] **CNBC/CNBC科技**：url 直接写 `.../rss.html`（避免依赖 fallback 变体）
-- [ ] **财联社电报/华尔街见闻/第一财经**：加 rsshub 备选实例（fallback 链）
-- [ ] **Investing**：补 headers/cookies 或 Google News 备用
-- [ ] **有代理环境**：对 B1/B2 全部源实测，更新状态 verified
-- [ ] **Reuter-示例**：确认用途（Reuters 官方无 RSS，建议删除或保留演示）
-- [ ] **全文增强源**：Google News 类 summary 短，采集后走 `enhance_full_text`/`fulltext_enrich` 补全文
+- [x] **CNBC/CNBC科技**:✅ 已完成 — config 中 url 已直接写 `.../rss.html`(实测 200,无需 fallback 变体)
+- [x] **财联社电报/华尔街见闻/第一财经**:✅ 已完成 — 均已配 rsshub 备选实例(见闻/第一财经 的 fallback.hosts 于 2026-09-10 补齐 `rsshub.rssforever.com`/`rsshub.app`;财联社原已有)
+- [x] **Investing**:✅ 已完成 — 已配 `fallback.google_news_site_search`(403 时自动降级 GNews site:investing.com)
+- [ ] **有代理环境**:对 B1/B2 全部源实测,更新状态 verified — 未做(需代理环境)
+- [x] **Reuter-示例**:✅ 已完成 — config 中已无 Reuters 示例条目(已移除;Reuters 官方无 RSS)
+- [x] **全文增强源**:✅ 已完成 — 已实现(`job_enrich_news_content`,worker 日志 enrich_news 正常产出)
 
 ---
 
@@ -236,8 +236,8 @@ rsshub.rssforever.com 全线 503，受影响 **28+ 源**（微博/知乎/百度/
 - [x] `social_hot_json` 直连适配器骨架（`news_gateway/custom.py` + 工厂注册）—— WAF 挑战页显式识别为 `SourceBlocked`，不产脏数据
 - [x] **微博热搜-直连打通**：`weibo.com/ajax/side/hotSearch` + SUB cookie + Referer/X-Requested-With → 实测 **52 条**（直连、无代理）；后按用户『**排除有风险源**』决策标 `paused`+`enabled:false`，**不进自动链路**（手动 `--only 微博热搜-直连` 仍可调试）
 - [x] 雪球通道核验 + **已搁置**（2026-09-04 用户确认无法维护登录态）：主域 `listV2` 阿里云 WAF 需 JS；`stock.xueqiu.com` 子域无 WAF 但需真实登录态（cookie `uid=-1`）。**依赖登录 cookie 的方案放弃**，源已标 `_health=paused`。自动化替代路径（供未来选择）：① Playwright 无头匿名执行 WAF JS → 主域 listV2（免登录）；② 等价内容源（新浪 7×24/东财/见闻/金十，已接入，零成本）；③ 公共 rsshub 实例恢复后原 `rsshub_rss` 雪球源自动复活（fallback 链已配）
-- [ ] 微博热搜-直连接入 scheduler（定频、低频、可开关）
-- [ ] probe 感知 `fallback.hosts` / 健康自动回写（probe 现只测主 url）
+- [ ] 微博热搜-直连接入 scheduler（定频、低频、可开关）— 未做:该源按"排除有风险源"决策标 `paused`/`enabled:false`,接入需先确定启用策略(保留待定)
+- [x] probe 感知 `fallback.hosts` / 健康自动回写 — ✅ 2026-09-10 完成:`scripts/probe_sources.py` 现支持主 URL 失败时按 host 替换遍历备选实例,并新增 `--write-health` 回写 `_health` 与把可用备选提至 hosts 首位
 - [x] **网关采集按 poll.group 分档接入 scheduler**（2026-09-04，详见 `docs/爬取时间表.md`）：cn_fast(20) 盘中 120s/盘后 600s、media(51) 300s 恒定、slow(9) 600s、cron 每日 04:00 refill 全量兜底；仅采 `_health=verified` 零风险源，登录态/paused 自动排除，`asyncio.to_thread` 防阻塞；分组断言 20+51+9=80 通过，实采 cn_fast 1156条/105s、slow 295条/28s
 
 ### 🔴 未决核心（2026-09-04 探测后）

@@ -289,7 +289,9 @@
       ],
       "fallback": {
         "hosts": [
-          "rss.injahow.cn"
+          "rss.injahow.cn",
+          "rsshub.rssforever.com",
+          "rsshub.app"
         ]
       },
       "parser": {},
@@ -679,7 +681,9 @@
       "fixes": [],
       "fallback": {
         "hosts": [
-          "rss.injahow.cn"
+          "rss.injahow.cn",
+          "rsshub.rssforever.com",
+          "rsshub.app"
         ]
       },
       "parser": {},
