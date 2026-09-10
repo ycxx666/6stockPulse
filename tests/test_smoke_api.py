@@ -50,6 +50,17 @@ class TestSmokeAPI(unittest.TestCase):
         d = self._json("/api/predictions/next-session")
         self.assertTrue(d.get("ok"), "predictions 包络 ok 应为 true")
 
+    def test_hotspots(self):
+        d = self._json("/api/hotspots?limit=3")
+        self.assertTrue(d.get("ok"), "hotspots 包络 ok 应为 true")
+        for k in ("topics", "hot_news", "keywords"):
+            self.assertIn(k, d.get("data", {}), f"hotspots.data 应含 {k}")
+
+    def test_frontend_global_page(self):
+        status, body = http_get("/frontend/global.html")
+        self.assertEqual(status, 200)
+        self.assertIn("6StockPulse", body)
+
 
 if __name__ == "__main__":
     unittest.main()

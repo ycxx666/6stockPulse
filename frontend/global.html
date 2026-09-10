@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <title>6StockPulse · 全球热点</title>
+  <link rel="stylesheet" href="./css/base.css" />
+  <style>
+    /* ===== 全球热点专属样式(沿用 base.css 主题变量) ===== */
+    .gh-grid {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1.2fr 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .column { display: grid; gap: 12px; align-content: start; }
+
+    .card {
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12, 31, 49, 0.9), rgba(6, 20, 34, 0.92));
+      padding: 12px;
+      transition: background-color .2s;
+    }
+    .card:hover { background: rgba(14, 38, 60, 0.92); cursor: pointer; }
+
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px; font-size: 11px; color: var(--muted);
+    }
+    .tag {
+      background: rgba(255, 255, 255, 0.05); padding: 2px 8px; border-radius: 4px;
+      color: var(--muted); display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+    }
+    .tag.highlight { background: rgba(40, 215, 231, 0.1); color: var(--cyan); }
+
+    .title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.45; }
+    .subtitle { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--muted); margin-top: 10px;
+    }
+    .trend-up { color: var(--red); }      /* A股:红为涨/上升 */
+    .trend-down { color: var(--green); }  /* 绿为跌/下降 */
+    .stock-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .stock-tag { background: rgba(90, 149, 255, 0.15); color: #8fb4ff; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+
+    .filter-bar { display: flex; gap: 12px; padding: 4px 2px; font-size: 12px; flex-wrap: wrap; }
+    .filter-bar span { color: var(--muted); cursor: pointer; padding-bottom: 3px; border-bottom: 2px solid transparent; }
+    .filter-bar span.active { color: var(--text); border-bottom-color: var(--cyan); }
+
+    .hot-search-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+    .hot-search-item:last-child { border-bottom: none; }
+    .rank { font-size: 16px; font-weight: 800; font-style: italic; width: 32px; color: var(--muted); font-family: var(--font-mono); }
+    .rank.top-3 { color: var(--cyan); }
+    .keyword { flex: 1; font-size: 13px; color: var(--text); }
+    .keyword small { color: var(--muted); font-weight: 400; font-size: 10px; }
+    .trend-value { font-size: 12px; color: var(--red); font-family: var(--font-mono); }
+
+    .ai-summary { border-color: rgba(110, 159, 255, 0.25); box-shadow: 0 0 15px rgba(110, 159, 255, 0.06); }
+    .ai-badge { display: inline-flex; align-items: center; gap: 4px; color: #b98aff; font-size: 11px; margin-bottom: 8px; }
+
+    @media (max-width: 1500px) { .gh-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="window-strip">
+      <span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span>
+      <span class="window-title">6StockPulse · 全球资讯量化系统</span>
+    </div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">⌁</div>
+        <div>
+          <div class="brand-name">6STOCKPULSE</div>
+          <div class="brand-sub">Quantification System v9.1.0</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="navHost" aria-label="主导航"></nav>
+
+      <div class="tools">
+        <label class="search">⌕ <input id="searchInput" placeholder="搜索热点/资讯..." /></label>
+        <span class="pill live" id="connPill" title="数据连接状态">轮询中</span>
+        <span class="clock" id="clock">--:--:--</span>
+        <button class="pill" id="refreshBtn">⟳ 刷新</button>
+      </div>
+    </header>
+
+    <section class="ticker-strip">
+      <div class="ticker-live">▶ 行情</div>
+      <div class="ticker-row" id="tickerRow"></div>
+    </section>
+
+    <main class="gh-grid">
+      <!-- ① 专题追踪 -->
+      <div class="column">
+        <div id="topicList"><div class="card"><div class="list-empty">专题加载中…</div></div></div>
+      </div>
+
+      <!-- ② 全球热点排名 -->
+      <div class="column">
+        <div class="card" style="padding:8px;">
+          <div class="filter-bar" id="hotFilter">
+            <span class="active" data-f="all">全部</span>
+            <span data-f="watch">关注</span>
+            <span data-f="bull">利好</span>
+            <span data-f="bear">利空</span>
+            <span data-f="cn">A股</span>
+            <span data-f="us">美股</span>
+          </div>
+        </div>
+        <div id="hotList"><div class="card"><div class="list-empty">热点加载中…</div></div></div>
+      </div>
+
+      <!-- ③ 最新资讯 + 智能摘要 -->
+      <div class="column">
+        <div class="card"><div class="card-header"><span class="tag highlight">最新资讯</span></div></div>
+        <div id="latestList"><div class="card"><div class="list-empty">资讯加载中…</div></div></div>
+        <div class="card ai-summary">
+          <div class="ai-badge">✦ 智能摘要 · LOCAL ENGINE</div>
+          <div class="subtitle" id="aiText">正在分析当前热点与市场情绪…</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;">本地统计/LLM · 不构成投资建议</div>
+        </div>
+      </div>
+
+      <!-- ④ 关键词热搜榜 -->
+      <div class="column">
+        <div class="card">
+          <div class="card-header"><span class="tag highlight">关键词热搜榜</span><span id="kwMeta">--</span></div>
+          <div id="kwList"><div class="list-empty">热搜加载中…</div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="bottom-dock" id="connDock"><span>⋯</span><span id="connText">连接中…</span></div>
+
+  <script src="./js/common.js"></script>
+  <script>
+    /* ===== 全球热点专属脚本(真数据;去 CDN,无外部依赖) ===== */
+    let hotData = [];
+    let hotFilter = 'all';
+    // 公共导航(全球热点 active)
+    renderNav('global');
+
+    function fmtTime(pt){
+      if (!pt) return '';
+      const s = String(pt);
+      const d = s.slice(0, 10), hm = s.slice(11, 16);
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      return d === today ? hm : (d.slice(5) + ' ' + hm);
+    }
+    function pctTxt(v){ return (Number(v) > 0 ? '+' : '') + Number(v || 0).toFixed(2) + '%'; }
+    function srcColor(cls){ return cls === 'blue' ? 'blue' : cls === 'red' ? 'red' : ''; }
+
+    // ① 顶部行情带
+    async function loadTickers(){
+      try {
+        const list = await fetchJson(CONFIG.endpoints.tickers);
+        const html = (list || []).map(t => `
+          <div class="ticker-item">
+            <span class="ticker-name">${escapeHtml(t.name)}</span>
+            <span class="ticker-price">${escapeHtml(t.price)}</span>
+            <span class="ticker-change ${Number(t.change_pct) >= 0 ? 'red-text' : 'green-text'}">${pctTxt(t.change_pct)}</span>
+          </div>`).join('');
+        setHtmlIfChanged(document.getElementById('tickerRow'), html || '<div class="ticker-item"><span class="ticker-name">暂无行情</span></div>');
+      } catch (e) { setHtmlIfChanged(document.getElementById('tickerRow'), '<div class="ticker-item"><span class="ticker-name">行情暂不可用</span></div>'); }
+    }
+
+    // ① 专题追踪(按 category 聚合)
+    function renderTopics(list){
+      const el = document.getElementById('topicList');
+      if (!list || !list.length) { setHtmlIfChanged(el, '<div class="card"><div class="list-empty">暂无专题</div></div>'); return; }
+      setHtmlIfChanged(el, list.map((t, i) => `
+        <div class="card">
+          <div class="card-header">
+            <span class="tag highlight"># ${escapeHtml(t.name)}</span>
+            <span>${escapeHtml(fmtTime(t.latest_time))} · ${t.count} 条</span>
+          </div>
+          <div class="subtitle">${escapeHtml(t.summary || '')}</div>
+        </div>`).join(''));
+    }
+
+    // ② 全球热点排名(筛选)
+    function hotMatch(h){
+      const src = String(h.source || '').toLowerCase();
+      if (hotFilter === 'bull') return Number(h.sentiment) > 0;
+      if (hotFilter === 'bear') return Number(h.sentiment) < 0;
+      if (hotFilter === 'cn') return /新浪|东财|东方财富|财联社|证券时报|金十|见闻/.test(h.source || '');
+      if (hotFilter === 'us') return /cnbc|bloomberg|wsj|marketwatch|investing|business insider|yahoo|reuters|ft/.test(src);
+      if (hotFilter === 'watch') return false; // 关注:暂无自定义关注,空态
+      return true;
+    }
+    function applyHotFilter(){
+      const el = document.getElementById('hotList');
+      const arr = (hotData || []).filter(hotMatch);
+      if (!arr.length) {
+        setHtmlIfChanged(el, `<div class="card"><div class="list-empty">${hotFilter === 'watch' ? '暂无关注项 · 关注功能待开放' : '暂无数据'}</div></div>`);
+        return;
+      }
+      setHtmlIfChanged(el, arr.slice(0, 12).map(h => {
+        const up = Number(h.trend_per_h) >= 0;
+        const stocks = (h.stocks && h.stocks.length)
+          ? `<div class="stock-tags">${h.stocks.slice(0, 4).map(s => `<span class="stock-tag">${escapeHtml(typeof s === 'string' ? s : (s.name || s.code || ''))}</span>`).join('')}</div>` : '';
+        return `
+        <div class="card" data-newsid="${escapeHtml(h.news_id || '')}">
+          <div class="card-header">
+            <span class="tag highlight">${escapeHtml(h.source || '快讯')}</span>
+            <span>${escapeHtml(fmtTime(h.publish_time))}</span>
+          </div>
+          <div class="title">${escapeHtml(h.title)}</div>
+          ${stocks}
+          <div class="card-footer">
+            <span>热度 ${Math.round(Number(h.heat) * 100)}</span>
+            <span class="${up ? 'trend-up' : 'trend-down'}">${up ? '↑' : '↓'} ${Math.abs(Number(h.trend_per_h) || 0)}/h</span>
+          </div>
+        </div>`;
+      }).join(''));
+    }
+
+    // ③ 最新资讯
+    async function loadLatest(){
+      try {
+        const list = await fetchJson(CONFIG.endpoints.news + '?limit=12');
+        const arr = (list || []);
+        const el = document.getElementById('latestList');
+        if (!arr.length) { setHtmlIfChanged(el, '<div class="card"><div class="list-empty">采集数据中…</div></div>'); return; }
+        setHtmlIfChanged(el, arr.map(n => `
+          <div class="card" data-newsid="${escapeHtml(n.news_id || '')}">
+            <div class="title" style="margin-bottom:6px;">${escapeHtml(n.title)}</div>
+            <div class="card-footer">
+              <span class="tag">${escapeHtml(n.source || '快讯')}</span>
+              <span>${escapeHtml(fmtTime(n.publish_time))}</span>
+            </div>
+          </div>`).join(''));
+      } catch (e) { setHtmlIfChanged(document.getElementById('latestList'), '<div class="card"><div class="list-empty">资讯暂不可用</div></div>'); }
+    }
+
+    // ③ 智能摘要(优先 LLM 简报,失败回退本地统计)
+    async function loadBriefing(){
+      const el = document.getElementById('aiText');
+      try {
+        const b = await fetchJson('/api/analysis/briefing');
+        let text = '';
+        if (b) text = (typeof b === 'string') ? b : (b.summary || b.text || b.briefing || '');
+        if (!text) {
+          const s = await fetchJson(CONFIG.endpoints.sentiment);
+          text = s && s.score != null ? `本地统计:A股情绪 ${s.score}（${s.label || '中性'}）` : '';
+        }
+        setTextIfChanged(el, text || '暂无摘要（LLM 未配置时显示本地统计）');
+      } catch (e) {
+        try {
+          const s = await fetchJson(CONFIG.endpoints.sentiment);
+          setTextIfChanged(el, s && s.score != null ? `本地统计:A股情绪 ${s.score}（${s.label || '中性'}）` : '暂无摘要');
+        } catch (e2) { setTextIfChanged(el, '暂无摘要'); }
+      }
+    }
+
+    // ④ 关键词热搜榜
+    function renderKeywords(list){
+      const el = document.getElementById('kwList');
+      if (!list || !list.length) { setHtmlIfChanged(el, '<div class="list-empty">暂无热搜关键词</div>'); return; }
+      setHtmlIfChanged(el, list.slice(0, 12).map((k, i) => `
+        <div class="hot-search-item">
+          <div class="rank ${i < 3 ? 'top-3' : ''}">${String(i + 1).padStart(2, '0')}</div>
+          <div class="keyword">${escapeHtml(k.keyword)}<br><small>${k.count} 条 · ${Number(k.trend_per_h) >= 0 ? '+' : ''}${k.trend_per_h}/h</small></div>
+          <div class="trend-value" title="热度">${Math.round(Number(k.heat) * 100)}</div>
+        </div>`).join(''));
+    }
+
+    async function loadHotspots(){
+      try {
+        const d = await fetchJson('/api/hotspots?limit=20');
+        hotData = (d && d.hot_news) || [];
+        renderTopics((d && d.topics) || []);
+        applyHotFilter();
+        renderKeywords((d && d.keywords) || []);
+        const meta = document.getElementById('kwMeta');
+        if (meta && d && d.generated_at) setTextIfChanged(meta, String(d.generated_at).slice(0, 16).replace('T', ' '));
+      } catch (e) {
+        renderTopics([]); renderKeywords([]);
+        setHtmlIfChanged(document.getElementById('hotList'), '<div class="card"><div class="list-empty">热点服务暂不可用</div></div>');
+      }
+    }
+
+    async function bootstrap(){
+      setConn('connecting');
+      loadTickers();
+      loadLatest();
+      loadHotspots();
+      loadBriefing();
+      // 连接状态:以快照健康为准
+      try {
+        await fetchJson(CONFIG.endpoints.tickers);
+        setConn('ok');
+      } catch (e) { setConn('error'); }
+    }
+
+    // 交互:筛选
+    document.querySelectorAll('#hotFilter span').forEach(sp => {
+      sp.addEventListener('click', () => {
+        document.querySelectorAll('#hotFilter span').forEach(x => x.classList.remove('active'));
+        sp.classList.add('active');
+        hotFilter = sp.dataset.f || 'all';
+        applyHotFilter();
+      });
+    });
+    // 交互:卡片点击 → 跳转全景市场新闻(暂用提示;详情弹层将在公共层提供)
+    function bindNewsClick(root){
+      const el = document.getElementById(root); if (!el) return;
+      el.addEventListener('click', e => {
+        const c = e.target.closest('[data-newsid]'); if (!c) return;
+        const id = c.dataset.newsid; if (id) openNewsDetail(id);
+      });
+    }
+    bindNewsClick('hotList'); bindNewsClick('latestList');
+    // 搜索:本地过滤卡片
+    document.getElementById('searchInput').addEventListener('input', e => {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('#hotList .card, #latestList .card, #topicList .card, #kwList .hot-search-item').forEach(el => {
+        el.style.display = (!q || el.textContent.toLowerCase().includes(q)) ? '' : 'none';
+      });
+    });
+    document.getElementById('refreshBtn').addEventListener('click', () => bootstrap());
+    setInterval(tickClock, 1000); tickClock();
+    bootstrap();
+    setInterval(() => bootstrap(), 30000);
+  </script>
+</body>
+</html>

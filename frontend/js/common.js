@@ -1,7 +1,7 @@
 /* ============================================================
    6StockPulse · 公共运行时(common.js)
    所有界面共享:API 端点表 / 工具函数 / 时钟 / 连接状态条 /
-   防闪烁 DOM 写入 / WebSocket 实时通道。
+   防闪烁 DOM 写入 / WebSocket 实时通道 / 新闻详情弹层。
    界面专属的渲染与业务逻辑放在各自页面的 <script> 内。
    约定:新页面新增全局函数请加前缀或挂到 window.NS 下,勿与公共名冲突。
    ============================================================ */
@@ -22,7 +22,8 @@ const CONFIG = {
     concepts: '/api/concepts/leaders',
     ladder: '/api/short-term/limit-up-ladder',
     heat: '/api/short-term/heat',
-    signals: '/api/signals'
+    signals: '/api/signals',
+    hotspots: '/api/hotspots'
   }
 };
 
@@ -116,4 +117,52 @@ function connectWS(handlers) {
   };
   open();
   return { close() { closed = true; clearTimeout(timer); try { ws && ws.close(); } catch (e) {} } };
+}
+
+// ── 通用导航页头(两页复用;active: 'global' | 'market') ──
+function renderNav(active) {
+  const items = [
+    ['global', '全球热点', './global.html'],
+    ['market', '全景市场', './index.html'],
+  ];
+  const links = items.map(([k, label, href]) =>
+    `<a class="nav-btn ${active === k ? 'active' : ''}" href="${href}">${label}</a>`).join('');
+  const disabled = ['实时监控', '概念图谱', '未来趋势', '全量数据', '消息中心']
+    .map(t => `<button class="nav-btn" disabled title="暂未开放">${t}</button>`).join('');
+  const host = document.getElementById('navHost');
+  if (host) setHtmlIfChanged(host, links + disabled);
+}
+
+// ── 通用新闻详情弹层(按需创建;#newsModal 若页面已存在则复用) ──
+function ensureNewsModal() {
+  let m = document.getElementById('newsModal');
+  if (m) return m;
+  m = document.createElement('div');
+  m.id = 'newsModal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:60;background:rgba(2,7,14,.72);display:none;align-items:center;justify-content:center;padding:40px;';
+  m.innerHTML = '<div style="position:relative;max-width:720px;width:100%;max-height:78vh;overflow:auto;border-radius:12px;border:1px solid rgba(78,134,165,.3);background:linear-gradient(180deg,rgba(12,31,49,.98),rgba(6,20,34,.99));padding:22px 24px;box-shadow:0 24px 60px rgba(0,0,0,.5)">'
+    + '<button id="newsModalClose" style="position:absolute;right:12px;top:10px;background:transparent;border:0;color:#7391a4;font-size:16px;cursor:pointer">✕</button>'
+    + '<div id="newsModalBody"></div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; });
+  m.querySelector('#newsModalClose').addEventListener('click', () => { m.style.display = 'none'; });
+  return m;
+}
+
+async function openNewsDetail(id) {
+  if (!id) return;
+  const m = ensureNewsModal();
+  const body = m.querySelector('#newsModalBody');
+  body.innerHTML = '<div style="color:#4d687a;text-align:center;padding:18px">加载中…</div>';
+  m.style.display = 'flex';
+  try {
+    const n = await fetchJson('/api/news/' + encodeURIComponent(id));
+    const t = (n && n.title) || '', src = (n && n.source) || '', pt = (n && n.publish_time) || '';
+    const content = (n && (n.content || n.summary)) || '';
+    body.innerHTML = `<h3 style="margin:0 0 8px;font-size:16px;color:#eaf4fb;line-height:1.5">${escapeHtml(t)}</h3>`
+      + `<div style="color:#58788b;font-size:10px;margin-bottom:12px;font-family:var(--font-mono)">${escapeHtml(src)} · ${escapeHtml(String(pt).slice(0, 16).replace('T', ' '))}</div>`
+      + `<div style="color:#d0dfe7;font-size:12px;line-height:1.9;white-space:pre-wrap">${escapeHtml(String(content).slice(0, 4000))}</div>`;
+  } catch (e) {
+    body.innerHTML = '<div style="color:#4d687a;text-align:center;padding:18px">详情加载失败</div>';
+  }
 }

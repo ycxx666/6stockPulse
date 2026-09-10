@@ -25,6 +25,7 @@ from app.api.routes.market import router as market_router
 from app.api.routes.news import router as news_router
 from app.api.routes.sentiment import router as sentiment_router
 from app.api.routes.analysis import router as analysis_router
+from app.api.routes.hotspots import router as hotspots_router
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +56,11 @@ app.include_router(market_router)
 app.include_router(news_router)
 app.include_router(sentiment_router)
 app.include_router(analysis_router)
+app.include_router(hotspots_router)
 
 # ── 静态文件 (前端) ──
 from pathlib import Path
-_frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
+_frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
 if _frontend_dir.exists():
     app.mount("/frontend", StaticFiles(directory=str(_frontend_dir)), name="frontend")
 

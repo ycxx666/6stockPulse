@@ -192,15 +192,7 @@
         </div>
       </div>
 
-      <nav class="nav" aria-label="主导航">
-        <button class="nav-btn" disabled title="暂未开放">全球热点</button>
-        <button class="nav-btn active">全景市场</button>
-        <button class="nav-btn" disabled title="暂未开放">实时监控</button>
-        <button class="nav-btn" disabled title="暂未开放">概念图谱</button>
-        <button class="nav-btn" disabled title="暂未开放">未来趋势</button>
-        <button class="nav-btn" disabled title="暂未开放">全量数据</button>
-        <button class="nav-btn" disabled title="暂未开放">消息中心</button>
-      </nav>
+      <nav class="nav" id="navHost" aria-label="主导航"></nav>
 
       <div class="tools">
         <label class="search">⌕ <input id="searchInput" placeholder="搜索新闻、板块、股票..." /></label>
@@ -938,6 +930,7 @@
     bootstrap();
     setInterval(()=>bootstrap(), 30000);  // 每 30s 轮询刷新真实数据(增量写入,不闪烁)
     startRealtime();                       // A3: WS 实时通道(市场宽度)
+    renderNav('market');                   // 公共导航(全景市场 active)
   </script>
 </body>
 </html>
