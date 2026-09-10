@@ -80,9 +80,9 @@ async def next_session_prediction():
     row = await db.fetch_one("""
         SELECT horizon, up_probability, flat_probability, down_probability,
                confidence, explanation, model_version,
-               generated_at::text AS generated_at
+               predicted_at::text AS generated_at
         FROM prediction_result
-        ORDER BY generated_at DESC LIMIT 1
+        ORDER BY predicted_at DESC LIMIT 1
     """)
     if not row:
         return APIResponse.success({
