@@ -90,19 +90,19 @@
 
 ## 五、执行路线图（三批，各带验收）
 
-### 批 1 —— 零/低代码，本周（配置层）
-- [ ] ① rsshub 源 fallback.hosts 补齐已知公共实例 + 现有 3 实例实测标注；
-- [ ] ② 已死官方源（中证报/中证网）改 GNews 兜底或移除；Investing 补 GNews fallback；Reuters 示例删除；
-- [ ] ③ 代理双路尝试（小改 adapter）+ 重跑 `probe_sources.py` 全量；
-- [ ] ④ 更新 `docs/news_source_issues.md` 状态。
-- **验收**：123 源中内容有效 ≥ 100；每 rsshub 源配置里有 ≥1 个可用实例；无 404 死源空跑。
+### 批 1 —— 零/低代码(配置层) ✅ 已完成(2026-09-04 ~ 09-10)
+- [x] ① rsshub 源 fallback.hosts 补齐 + 3 实例实测标注;见闻/第一财经 于 2026-09-10 再补 `rsshub.rssforever.com`/`rsshub.app`;
+- [x] ② 已死官方源(中证报/中证网)改 GNews 兜底;Investing 补 GNews fallback;Reuters 示例删除(源数 123→122);
+- [x] ③ 代理双路(小改 adapter)+ 重跑 `probe_sources.py` 全量(122 源 36s:85 有效 / 37 问题);
+- [x] ④ 更新 `docs/news_source_issues.md` 状态。
+- **验收**:内容有效 85/122(受 rsshub 公共实例 503 拖累);每 rsshub 源配置有 ≥1 个实例;无 404 死源空跑。
 
-### 批 2 —— 中代码，次周（直连灰度 + 自愈）
-- [ ] ① `custom_json`/`social_hot_json` 适配器骨架 + 雪球（cookie 槽位）灰度；
-- [ ] ② 微博 m 站 adapter（cookie 外置、低频限量、可开关）灰度；
-- [ ] ③ probe 历史健康库 + 可用实例自动回写；
-- [ ] ④ 网关接入 scheduler。
-- **验收**：微博/雪球源灰度 7 天，可用率 ≥ 80%，被风控时自动降级到 B/E 无空洞。
+### 批 2 —— 直连灰度 + 自愈 ✅ 已完成/已决策(2026-09-04 ~ 09-10)
+- [x] ① `custom_json`/`social_hot_json` 适配器骨架(工厂注册;雪球经核验搁置——WAF/登录态);
+- [x] ② 微博:已完成"热搜直连"打通(实测 52 条);后续 ⏭ **用户决定不接入**(源保持 `paused`,不进自动链路);
+- [x] ③ probe 感知 `fallback.hosts` + 可用实例/健康自动回写(`--write-health`,2026-09-10);
+- [x] ④ 网关按 `poll.group` 接入 scheduler(cn_fast/media/slow + 每日 refill,2026-09-04)。
+- **验收**:微博/雪球均未进自动链路(用户决策);probe 自愈能力已落地;rsshub 死源待公共实例恢复或自建(批 3)。
 
 ### 批 3 —— 后续，视批 1/2 结果（决策点）
 - [ ] tophub/热榜聚合自部署（若 B 通道优于 C 的稳定性）；

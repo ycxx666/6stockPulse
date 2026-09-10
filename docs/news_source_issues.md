@@ -1,6 +1,6 @@
 # 新闻源问题登记清单
 
-> 更新时间：2026-09-04（含 50 源全量健康探测）
+> 更新时间：2026-09-10（初版 2026-09-04；含 50 源全量健康探测）
 > 全量探测命令：`python scripts/probe_sources.py` → 输出 `docs/source_health_report.json`
 > 处理策略：先登记，统一处理（接入/修复/换源/加代理）
 
@@ -236,7 +236,7 @@ rsshub.rssforever.com 全线 503，受影响 **28+ 源**（微博/知乎/百度/
 - [x] `social_hot_json` 直连适配器骨架（`news_gateway/custom.py` + 工厂注册）—— WAF 挑战页显式识别为 `SourceBlocked`，不产脏数据
 - [x] **微博热搜-直连打通**：`weibo.com/ajax/side/hotSearch` + SUB cookie + Referer/X-Requested-With → 实测 **52 条**（直连、无代理）；后按用户『**排除有风险源**』决策标 `paused`+`enabled:false`，**不进自动链路**（手动 `--only 微博热搜-直连` 仍可调试）
 - [x] 雪球通道核验 + **已搁置**（2026-09-04 用户确认无法维护登录态）：主域 `listV2` 阿里云 WAF 需 JS；`stock.xueqiu.com` 子域无 WAF 但需真实登录态（cookie `uid=-1`）。**依赖登录 cookie 的方案放弃**，源已标 `_health=paused`。自动化替代路径（供未来选择）：① Playwright 无头匿名执行 WAF JS → 主域 listV2（免登录）；② 等价内容源（新浪 7×24/东财/见闻/金十，已接入，零成本）；③ 公共 rsshub 实例恢复后原 `rsshub_rss` 雪球源自动复活（fallback 链已配）
-- [ ] 微博热搜-直连接入 scheduler（定频、低频、可开关）— 未做:该源按"排除有风险源"决策标 `paused`/`enabled:false`,接入需先确定启用策略(保留待定)
+- ~~微博热搜-直连接入 scheduler~~ → ❌ **不做**(2026-09-10 用户决定:微博不接入;源保持 `_health=paused` / `enabled:false`,不进自动链路,手动 `--only 微博热搜-直连` 仍可调试)
 - [x] probe 感知 `fallback.hosts` / 健康自动回写 — ✅ 2026-09-10 完成:`scripts/probe_sources.py` 现支持主 URL 失败时按 host 替换遍历备选实例,并新增 `--write-health` 回写 `_health` 与把可用备选提至 hosts 首位
 - [x] **网关采集按 poll.group 分档接入 scheduler**（2026-09-04，详见 `docs/爬取时间表.md`）：cn_fast(20) 盘中 120s/盘后 600s、media(51) 300s 恒定、slow(9) 600s、cron 每日 04:00 refill 全量兜底；仅采 `_health=verified` 零风险源，登录态/paused 自动排除，`asyncio.to_thread` 防阻塞；分组断言 20+51+9=80 通过，实采 cn_fast 1156条/105s、slow 295条/28s
 
