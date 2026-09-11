@@ -149,14 +149,7 @@
     // 公共导航(全球热点 active)
     renderNav('global');
 
-    function fmtTime(pt){
-      if (!pt) return '';
-      const s = String(pt);
-      const d = s.slice(0, 10), hm = s.slice(11, 16);
-      const now = new Date();
-      const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-      return d === today ? hm : (d.slice(5) + ' ' + hm);
-    }
+    function fmtTime(pt){ return fmtTimeText(pt); }
     function pctTxt(v){ return (Number(v) > 0 ? '+' : '') + Number(v || 0).toFixed(2) + '%'; }
     function srcColor(cls){ return cls === 'blue' ? 'blue' : cls === 'red' ? 'red' : ''; }
 

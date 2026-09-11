@@ -628,14 +628,7 @@
     // ── A4 新闻: 跨日时间 + 分类过滤 + 点击详情 ──
     let newsData = [];
     let newsFilter = 'all';
-    function newsTimeText(pt){
-      if (!pt) return '';
-      const s = String(pt);
-      const d = s.slice(0, 10), hm = s.slice(11, 16);
-      const now = new Date();
-      const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-      return d === today ? hm : (d.slice(5) + ' ' + hm);
-    }
+    function newsTimeText(pt){ return fmtTimeText(pt); }
     function mapNews(items){
       return (items || []).map(n => ({
         id: n.news_id || n.id || '',

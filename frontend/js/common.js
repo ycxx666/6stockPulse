@@ -160,9 +160,24 @@ async function openNewsDetail(id) {
     const t = (n && n.title) || '', src = (n && n.source) || '', pt = (n && n.publish_time) || '';
     const content = (n && (n.content || n.summary)) || '';
     body.innerHTML = `<h3 style="margin:0 0 8px;font-size:16px;color:#eaf4fb;line-height:1.5">${escapeHtml(t)}</h3>`
-      + `<div style="color:#58788b;font-size:10px;margin-bottom:12px;font-family:var(--font-mono)">${escapeHtml(src)} · ${escapeHtml(String(pt).slice(0, 16).replace('T', ' '))}</div>`
+      + `<div style="color:#58788b;font-size:10px;margin-bottom:12px;font-family:var(--font-mono)">${escapeHtml(src)} · ${escapeHtml(fmtTimeText(pt, true))}</div>`
       + `<div style="color:#d0dfe7;font-size:12px;line-height:1.9;white-space:pre-wrap">${escapeHtml(String(content).slice(0, 4000))}</div>`;
   } catch (e) {
     body.innerHTML = '<div style="color:#4d687a;text-align:center;padding:18px">详情加载失败</div>';
   }
+}
+
+// ── 时间显示:把 API 的 UTC/带时区时间转成本地(当天 HH:MM,否则 MM-DD HH:MM) ──
+function fmtTimeText(pt, forceDate) {
+  if (!pt) return '';
+  const s = String(pt);
+  // 兼容 "2026-09-11T03:39:22+00:00"(ISO)与 "2026-09-11 11:39:22+08"(PG ::text)
+  const iso = s.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00');
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return s.slice(0, 16).replace('T', ' ');  // 回退:原样截取
+  const now = new Date();
+  const sameDay = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  const p2 = n => String(n).padStart(2, '0');
+  const hm = `${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  return (forceDate || !sameDay) ? `${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${hm}` : hm;
 }
