@@ -12,7 +12,7 @@ import os
 import unittest
 import urllib.request
 
-BASE = os.environ.get("SMOKE_BASE", "http://127.0.0.1:8900")
+BASE = os.environ.get("SMOKE_BASE", "http://219.224.5.250:8900")
 
 
 def http_get(path: str):
