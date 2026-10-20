@@ -49,7 +49,21 @@ async def compute_ashare_sentiment() -> dict:
     limit_down = breadth.get("limit_down", 0)
     # 涨停数/总股票数 映射到 0-100
     limit_up_ratio = float(limit_up) / max(float(total), 1)
-    limit_score = max(0, min(100, int(limit_up_ratio * 500)))  # 100/5000=2% → 10分
+    limit_down_ratio = float(limit_down) / max(float(total), 1)
+    # 涨跌停净占比分段映射（A股经验：净占比 1%≈60分、2%≈80分、3%+≈95分）
+    net_pct = (limit_up_ratio - limit_down_ratio) * 100
+    if net_pct >= 3:
+        limit_score = 95
+    elif net_pct >= 2:
+        limit_score = 80
+    elif net_pct >= 1:
+        limit_score = 60
+    elif net_pct >= 0.5:
+        limit_score = 50
+    elif net_pct >= 0:
+        limit_score = 40
+    else:
+        limit_score = 20
     factors["涨跌停强度"] = _factor(limit_up, limit_score, 15)
 
     # 3. 连板晋级率 (权重 15%)

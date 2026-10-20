@@ -128,7 +128,8 @@ async def get_profit_effect() -> dict:
     """)
     if not row or not row.get("sample_count"):
         return {"sample_count": 0, "avg_open_return": 0,
-                "avg_high_return": 0, "avg_close_return": 0}
+                "avg_high_return": 0, "avg_close_return": 0,
+                "no_data": True, "note": "暂无样本（上一交易日无涨停股或数据未更新）"}
     r = dict(row)
     r["avg_high_return"] = r.get("avg_open_return", 0)
     r["avg_close_return"] = r.get("avg_open_return", 0)

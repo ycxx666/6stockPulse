@@ -370,7 +370,8 @@ async def get_enhanced_profit_effect() -> dict:
     today = _date.today()
     empty = {"sample_count": 0, "sample": 0, "avg_open_return": 0,
              "avg_high_return": 0, "avg_close_return": 0,
-             "seal_rate": 0, "break_rate": 0}
+             "seal_rate": 0, "break_rate": 0,
+             "no_data": True, "note": "暂无样本（上一交易日无涨停股或数据未更新）"}
 
     # 1) 真实上一交易日(不依赖 today-1)
     prev_date = await db.fetch_val("""
