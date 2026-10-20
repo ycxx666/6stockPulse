@@ -184,10 +184,16 @@ async def _get_breadth() -> dict:
 
 
 async def _get_index_change() -> float:
+    """上证指数当日涨跌幅。
+    注意: latest_quotes / stock_prices 中的 '000001' 是平安银行(深市), 不是上证指数;
+    上证指数快照在 market_quote_snapshot.symbol='000001.SH' (由 collect_indices  upsert 维护)。
+    """
     row = await db.fetch_one("""
-        SELECT change_pct FROM latest_quotes WHERE stock_code = '000001' LIMIT 1
+        SELECT change_pct FROM market_quote_snapshot
+        WHERE symbol = '000001.SH' AND is_stale = FALSE
+        ORDER BY quote_time DESC LIMIT 1
     """)
-    return float(row["change_pct"]) if row and row.get("change_pct") else 0.0
+    return float(row["change_pct"]) if row and row.get("change_pct") is not None else 0.0
 
 
 # ═══════════════════════════════════════════════════════════════

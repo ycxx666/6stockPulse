@@ -190,15 +190,23 @@ async def _get_breadth() -> dict:
 
 
 async def _get_index_change() -> tuple[float, str]:
-    """返回 (涨跌幅, 口径说明)。优先上证指数，缺失回退全市场平均。"""
+    """返回 (涨跌幅, 口径说明)。优先上证指数(symbol='000001.SH'), 缺失回退全市场平均。
+    注意: latest_quotes / stock_prices 中的 '000001' 是平安银行(深市), 不是上证指数。
+    """
     row = await db.fetch_one("""
         SELECT change_pct FROM market_quote_snapshot
-        WHERE asset_type = 'index'
-          AND (name LIKE '%上证%' OR symbol LIKE '%SHCOMP%' OR symbol LIKE '000001.SH%')
-        LIMIT 1
+        WHERE symbol = '000001.SH' AND is_stale = FALSE
+        ORDER BY quote_time DESC LIMIT 1
     """)
     if row and row.get("change_pct") is not None:
         return float(row["change_pct"]), "上证指数"
+    row = await db.fetch_one("""
+        SELECT change_pct FROM market_quote_snapshot
+        WHERE asset_type = 'index' AND market = 'SH' AND is_stale = FALSE
+        ORDER BY quote_time DESC LIMIT 1
+    """)
+    if row and row.get("change_pct") is not None:
+        return float(row["change_pct"]), "沪市指数"
     row = await db.fetch_one("""
         SELECT AVG(change_pct) AS avg_chg FROM latest_quotes WHERE change_pct IS NOT NULL
     """)

@@ -22,12 +22,21 @@ async def compute_and_store_breadth() -> dict:
             COUNT(*) FILTER (WHERE change_pct > 0)   AS up_count,
             COUNT(*) FILTER (WHERE change_pct < 0)   AS down_count,
             COUNT(*) FILTER (WHERE change_pct = 0)   AS flat_count,
-            COUNT(*) FILTER (WHERE change_pct >= 9.95)  AS limit_up,
-            COUNT(*) FILTER (WHERE change_pct <= -9.95) AS limit_down,
+            COUNT(*) FILTER (WHERE change_pct >= CASE
+                WHEN LEFT(lq.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                WHEN LEFT(lq.stock_code, 1) IN ('4', '8') THEN 29.95
+                WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                ELSE 9.95 END)  AS limit_up,
+            COUNT(*) FILTER (WHERE change_pct <= -CASE
+                WHEN LEFT(lq.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                WHEN LEFT(lq.stock_code, 1) IN ('4', '8') THEN 29.95
+                WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                ELSE 9.95 END) AS limit_down,
             COUNT(*) FILTER (WHERE change_pct > 5)    AS big_up,
             COUNT(*) FILTER (WHERE change_pct < -5)   AS big_down,
             COUNT(*)                                   AS total
-        FROM latest_quotes
+        FROM latest_quotes lq
+        LEFT JOIN stocks s ON s.stock_code = lq.stock_code
     """)
     if not row or (row["total"] or 0) == 0:
         return {"up_count": 0, "down_count": 0, "flat_count": 0,
@@ -215,14 +224,19 @@ async def get_concept_leaders(limit: int = 6) -> list[dict]:
 # ────────── 分钟聚合: 指数分时图 ──────────
 _SINA_INDEX_SYMBOL = {"000001": "sh000001", "399001": "sz399001", "399006": "sz399006"}
 
-async def _fetch_sina_index_minutes(symbol: str, date_str: str | None) -> list[dict]:
-    """从新浪获取真实指数分钟线(json), 返回 [{t,open,high,low,close,volume,amount}]"""
+async def _fetch_sina_index_minutes(symbol: str, date_str: str | None,
+                                    datalen: int = 248, all_days: bool = False) -> list[dict]:
+    """从新浪获取真实指数分钟线(json), 返回 [{t,open,high,low,close,volume,amount}]
+    datalen: 拉取记录数 (248≈最近一个交易日, 1500≈覆盖约6个交易日)
+    all_days=True 时不做日期过滤, 返回窗口内全部交易日(由调用方按日期分组)
+    注意: volume/amount 均为分钟增量(非累计), 全天求和即当日总量
+    """
     import aiohttp, json, re
     from datetime import date as _date
     sina_sym = _SINA_INDEX_SYMBOL.get(symbol, "sh" + symbol)
     url = ("https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20_=/"
            "CN_MarketDataService.getKLineData"
-           f"?symbol={sina_sym}&scale=1&ma=no&datalen=248")
+           f"?symbol={sina_sym}&scale=1&ma=no&datalen={datalen}")
     headers = {"Referer": "https://finance.sina.com.cn/"}
     try:
         async with aiohttp.ClientSession() as s:
@@ -239,7 +253,7 @@ async def _fetch_sina_index_minutes(symbol: str, date_str: str | None) -> list[d
         arr = json.loads(m.group(0))
     except Exception:
         return []
-    keep_date = date_str or _date.today().isoformat()
+    keep_date = None if all_days else (date_str or _date.today().isoformat())
     out = []
     for item in arr or []:
         day = str(item.get("day", ""))
@@ -261,62 +275,38 @@ async def get_index_intraday(symbol: str = "000001", date_str: str | None = None
     """
     获取指数分钟级 OHLCV (供前端分时图)
     symbol: 000001=上证指数, 399001=深证成指, 399006=创业板指
-    优先从新浪指数分钟接口获取真实指数分时; 失败回退库内分钟数据
+    数据源: 新浪指数分钟线; 失败返回空列表(前端显示空态)。
+    禁止回退 stock_prices: 其中 '000001' 是平安银行(深市), 与指数无关。
     """
-    # 1) 新浪真实指数分钟线
-    sina = await _fetch_sina_index_minutes(symbol, date_str)
-    if sina:
-        return sina
-    # 2) 回退: 库内分钟数据
-    from datetime import date as _date
-    trade_date = _date.fromisoformat(date_str) if date_str else _date.today()
-    rows = await db.fetch_all("""
-        SELECT trade_time::text AS t, open, high, low, close, volume, amount
-        FROM stock_prices
-        WHERE stock_code = $1 AND trade_date = $2
-        ORDER BY trade_time ASC
-    """, symbol, trade_date)
-    return [dict(r) for r in rows] if rows else []
+    return await _fetch_sina_index_minutes(symbol, date_str)
 
 
 # ────────── 分钟量能对比 ──────────
 async def get_minute_volume_comparison() -> dict:
     """
-    今日 vs 昨日 分钟级成交量对比
-    返回 {today: [{t, close, volume}], yesterday: [{t, close, volume}]}
+    上证指数 今日 vs 上一交易日 分钟级成交量对比 (数据源: 新浪指数分钟线 sh000001)。
+    - 上一交易日取"今天之前最近一个有分钟数据的日期"(自动跳过周末/节假日)
+    - today_total_amount / yesterday_total_amount = 当日分钟 amount 增量求和(真实成交额)
+    返回 {today: [{t,open,high,low,close,volume,amount}], yesterday: [...],
+          today_total_amount, yesterday_total_amount}
+    注意: stock_prices 的 '000001' 是平安银行(深市), 严禁用于指数量能。
     """
-    from datetime import date, timedelta
-    today = date.today()
-    yesterday = today - timedelta(days=1)
-
-    today_rows = await db.fetch_all("""
-        SELECT trade_time::text AS t, close, volume
-        FROM stock_prices
-        WHERE stock_code = '000001' AND trade_date = $1
-        ORDER BY trade_time ASC
-    """, today)
-
-    yesterday_rows = await db.fetch_all("""
-        SELECT trade_time::text AS t, close, volume
-        FROM stock_prices
-        WHERE stock_code = '000001' AND trade_date = $1
-        ORDER BY trade_time ASC
-    """, yesterday)
-
+    from datetime import date as _date
+    today = _date.today()
+    rows = await _fetch_sina_index_minutes("000001", None, datalen=1500, all_days=True)
+    by_day: dict[str, list[dict]] = {}
+    for r in rows:
+        by_day.setdefault(r["t"][:10], []).append(r)
+    today_key = today.isoformat()
+    today_rows = by_day.get(today_key, [])
+    prev_key = max((k for k in by_day if k < today_key), default=None)
+    prev_rows = by_day.get(prev_key, []) if prev_key else []
     return {
-        "today": [dict(r) for r in today_rows],
-        "yesterday": [dict(r) for r in yesterday_rows],
-        "today_total_amount": await _get_daily_amount(today),
-        "yesterday_total_amount": await _get_daily_amount(yesterday),
+        "today": today_rows,
+        "yesterday": prev_rows,
+        "today_total_amount": round(sum(r["amount"] for r in today_rows), 2),
+        "yesterday_total_amount": round(sum(r["amount"] for r in prev_rows), 2),
     }
-
-
-async def _get_daily_amount(d: date) -> float:
-    row = await db.fetch_one("""
-        SELECT COALESCE(SUM(amount), 0) AS total
-        FROM stock_prices WHERE trade_date = $1
-    """, d)
-    return float(row["total"]) if row else 0.0
 
 
 # ────────── 概念持续性评分 ──────────
@@ -412,14 +402,15 @@ async def get_enhanced_profit_effect() -> dict:
         return empty
 
     def _limit_rate(code: str, name: str) -> float:
-        nm = (name or "").upper().replace(" ", "")
-        if "ST" in nm:
-            return 0.05
+        # 板别优先: 科创/创业板(含其ST)20%, 北交所30%, 主板ST 5%, 主板10%
         c = code or ""
         if c[:3] in ("300", "301", "688", "689"):
             return 0.20
         if c[:1] in ("4", "8"):   # 北交所
             return 0.30
+        nm = (name or "").upper().replace(" ", "")
+        if "ST" in nm:
+            return 0.05
         return 0.10
 
     acc_o = acc_h = acc_c = 0.0

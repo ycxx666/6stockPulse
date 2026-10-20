@@ -22,12 +22,21 @@ async def compute_and_store_breadth() -> dict:
             COUNT(*) FILTER (WHERE change_pct > 0)   AS up_count,
             COUNT(*) FILTER (WHERE change_pct < 0)   AS down_count,
             COUNT(*) FILTER (WHERE change_pct = 0)   AS flat_count,
-            COUNT(*) FILTER (WHERE change_pct >= 9.95)  AS limit_up,
-            COUNT(*) FILTER (WHERE change_pct <= -9.95) AS limit_down,
+            COUNT(*) FILTER (WHERE change_pct >= CASE
+                WHEN LEFT(lq.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                WHEN LEFT(lq.stock_code, 1) IN ('4', '8') THEN 29.95
+                WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                ELSE 9.95 END)  AS limit_up,
+            COUNT(*) FILTER (WHERE change_pct <= -CASE
+                WHEN LEFT(lq.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                WHEN LEFT(lq.stock_code, 1) IN ('4', '8') THEN 29.95
+                WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                ELSE 9.95 END) AS limit_down,
             COUNT(*) FILTER (WHERE change_pct > 5)    AS big_up,
             COUNT(*) FILTER (WHERE change_pct < -5)   AS big_down,
             COUNT(*)                                   AS total
-        FROM latest_quotes
+        FROM latest_quotes lq
+        LEFT JOIN stocks s ON s.stock_code = lq.stock_code
     """)
     if not row or (row["total"] or 0) == 0:
         return {"up_count": 0, "down_count": 0, "flat_count": 0,

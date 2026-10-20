@@ -25,6 +25,9 @@ from services.cache import cache, CacheKeys
 
 logger = logging.getLogger(__name__)
 
+# 上证指数日线收盘价缓存 (情绪快照每分钟计算, 避免每分钟请求新浪)
+_INDEX_DAILY_MEMO: dict[str, Any] = {"ts": 0.0, "closes": []}
+
 
 # ────────── A股情绪 ──────────
 async def compute_ashare_sentiment() -> dict:
@@ -69,7 +72,11 @@ async def compute_ashare_sentiment() -> dict:
     # 3. 连板晋级率 (权重 15%)
     ladder = await _get_ladder_data()
     ladder_score = _calc_ladder_score(ladder)
-    factors["连板晋级"] = _factor(len(ladder), ladder_score, 15)
+    ladder_factor = _factor(len(ladder), ladder_score, 15)
+    if not ladder:
+        ladder_factor["no_data"] = True
+        ladder_factor["note"] = "连板梯队为空（无数据或非交易时段）"
+    factors["连板晋级"] = ladder_factor
 
     # 4. 成交量能 (权重 15%)
     vol_data = await _get_volume_data()
@@ -77,20 +84,20 @@ async def compute_ashare_sentiment() -> dict:
     factors["成交量能"] = _factor(vol_data.get("ratio", 1.0), vol_score, 15)
 
     # 5. 板块扩散 (权重 15%)
-    sector_score = await _calc_sector_spread()
-    factors["板块扩散"] = _factor(None, sector_score, 15)
+    sector_score, sector_raw = await _calc_sector_spread()
+    factors["板块扩散"] = _factor(sector_raw, sector_score, 15)
 
     # 6. 主力资金 (权重 10%)
-    fund_score = await _calc_fund_score()
-    factors["主力资金"] = _factor(None, fund_score, 10)
+    fund_score, fund_raw = await _calc_fund_score()
+    factors["主力资金"] = _factor(fund_raw, fund_score, 10)
 
     # 7. 指数趋势 (权重 8%)
-    index_score = await _calc_index_trend()
-    factors["指数趋势"] = _factor(None, index_score, 8)
+    index_score, index_raw = await _calc_index_trend()
+    factors["指数趋势"] = _factor(index_raw, index_score, 8)
 
     # 8. 新闻情绪 (权重 7%)
-    news_score = await _calc_news_sentiment()
-    factors["新闻情绪"] = _factor(None, news_score, 7)
+    news_score, news_raw = await _calc_news_sentiment()
+    factors["新闻情绪"] = _factor(news_raw, news_score, 7)
 
     # 加权求和
     total_score = sum(f["normalized"] * f["weight"] / 100 for f in factors.values())
@@ -197,9 +204,9 @@ async def _get_ladder_data() -> list[dict]:
 
 
 def _calc_ladder_score(ladder: list[dict]) -> int:
-    """连板越多 → 分数越高"""
+    """连板越多 → 分数越高；无连板返回中性 50（不再给 30 的偏弱默认值）"""
     if not ladder:
-        return 30  # 无连板 = 中性偏弱
+        return 50
     total = sum(item.get("count", 0) for item in ladder)
     return max(0, min(100, int(total * 2 + 30)))
 
@@ -219,8 +226,8 @@ def _calc_volume_score(vol_data: dict) -> int:
     return 20
 
 
-async def _calc_sector_spread() -> int:
-    """上涨板块占比"""
+async def _calc_sector_spread() -> tuple[int, float | None]:
+    """上涨板块占比 → (score, 上涨板块占比 raw)"""
     row = await db.fetch_one("""
         SELECT
             COUNT(*) AS total,
@@ -228,12 +235,13 @@ async def _calc_sector_spread() -> int:
         FROM v_sector_top
     """)
     if not row or not row.get("total"):
-        return 50
-    return max(0, min(100, int(float(row["up_count"]) / float(row["total"]) * 100)))
+        return 50, None
+    up_ratio = float(row["up_count"]) / float(row["total"])
+    return max(0, min(100, int(up_ratio * 100))), round(up_ratio, 4)
 
 
-async def _calc_fund_score() -> int:
-    """主力资金方向"""
+async def _calc_fund_score() -> tuple[int, float | None]:
+    """主力资金方向 → (score, 净流入亿元 raw)"""
     row = await db.fetch_one("""
         SELECT COALESCE(SUM(main_net_inflow), 0) AS total_inflow
         FROM (
@@ -244,41 +252,73 @@ async def _calc_fund_score() -> int:
         ) t
     """)
     if not row:
-        return 50
+        return 50, None
     inflow = float(row.get("total_inflow") or 0) / 1e8  # 亿元
-    if inflow > 100: return 85
-    if inflow > 30:  return 70
-    if inflow > 0:   return 55
-    if inflow > -30: return 40
-    return 20
+    if inflow > 100: return 85, round(inflow, 2)
+    if inflow > 30:  return 70, round(inflow, 2)
+    if inflow > 0:   return 55, round(inflow, 2)
+    if inflow > -30: return 40, round(inflow, 2)
+    return 20, round(inflow, 2)
 
 
-async def _calc_index_trend() -> int:
-    """上证指数近5日趋势"""
-    row = await db.fetch_one("""
-        SELECT AVG(close) FILTER (WHERE trade_date >= CURRENT_DATE - INTERVAL '5 days') AS avg5,
-               AVG(close) FILTER (WHERE trade_date >= CURRENT_DATE - INTERVAL '20 days') AS avg20
-        FROM stock_prices
-        WHERE stock_code = '000001'
-    """)
-    if not row or not row.get("avg5"):
-        return 50
-    avg5 = float(row["avg5"] or 0)
-    avg20 = float(row["avg20"] or avg5)
+async def _calc_index_trend() -> tuple[int, float | None]:
+    """上证指数近5日 vs 20日均线趋势 → (score, 5/20日均线偏离%)
+    数据源: 新浪日线 sh000001 (scale=240, datalen=21)。
+    注意: stock_prices 的 '000001' 是平安银行(深市), 不代表指数;
+    market_quote_snapshot 只有最新快照无历史, 故取新浪日线。
+    任一环节失败返回 (50, None); 日线结果缓存 300 秒(情绪快照每分钟计算)。
+    """
+    import json as _json
+    import re as _re
+    import time as _time
+
+    import aiohttp
+
+    now_ts = _time.time()
+    closes: list[float] = []
+    if now_ts - _INDEX_DAILY_MEMO["ts"] < 300 and _INDEX_DAILY_MEMO["closes"]:
+        closes = list(_INDEX_DAILY_MEMO["closes"])
+    else:
+        try:
+            url = ("https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20_=/"
+                   "CN_MarketDataService.getKLineData?symbol=sh000001&scale=240&ma=no&datalen=21")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(url, headers={"Referer": "https://finance.sina.com.cn/"},
+                                 timeout=aiohttp.ClientTimeout(total=8)) as r:
+                    if r.status != 200:
+                        return 50, None
+                    txt = await r.text()
+            m = _re.search(r"\[.*\]", txt, _re.S)
+            if not m:
+                return 50, None
+            arr = _json.loads(m.group(0))
+            closes = [float(x["close"]) for x in arr if x.get("close")]
+        except Exception:
+            return 50, None
+        if len(closes) < 5:
+            return 50, None
+        _INDEX_DAILY_MEMO["ts"] = now_ts
+        _INDEX_DAILY_MEMO["closes"] = list(closes)
+
+    if len(closes) < 5:
+        return 50, None
+    avg5 = sum(closes[-5:]) / 5.0
+    avg20 = sum(closes[-20:]) / float(min(20, len(closes)))
     ratio = (avg5 / max(avg20, 0.01) - 1) * 100
-    return max(10, min(90, int(50 + ratio * 10)))
+    return max(10, min(90, int(50 + ratio * 10))), round(ratio, 2)
 
 
-async def _calc_news_sentiment() -> int:
-    """近期新闻情感"""
+async def _calc_news_sentiment() -> tuple[int, float | None]:
+    """近期新闻情感 → (score, 平均情感 raw)"""
     row = await db.fetch_one("""
         SELECT AVG(sentiment) AS avg_sent FROM news
         WHERE publish_time > NOW() - INTERVAL '2 hours'
           AND sentiment IS NOT NULL
     """)
     if not row or row.get("avg_sent") is None:
-        return 50
-    return max(10, min(90, int(50 + float(row["avg_sent"]) * 40)))
+        return 50, None
+    avg_sent = float(row["avg_sent"])
+    return max(10, min(90, int(50 + avg_sent * 40))), round(avg_sent, 4)
 
 
 # ────────── 全球情绪子因子 ──────────

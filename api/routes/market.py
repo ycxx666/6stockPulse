@@ -181,13 +181,22 @@ async def fund_flow_today():
             COUNT(*) FILTER (WHERE lq.change_pct > 0) AS up_count,
             COUNT(*) FILTER (WHERE lq.change_pct < 0) AS down_count,
             COUNT(*) FILTER (WHERE lq.change_pct = 0) AS flat_count,
-            COUNT(*) FILTER (WHERE lq.change_pct >= 9.95) AS limit_up,
-            COUNT(*) FILTER (WHERE lq.change_pct <= -9.95) AS limit_down,
+            COUNT(*) FILTER (WHERE lq.change_pct >= CASE
+                WHEN LEFT(lq.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                WHEN LEFT(lq.stock_code, 1) IN ('4', '8') THEN 29.95
+                WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                ELSE 9.95 END) AS limit_up,
+            COUNT(*) FILTER (WHERE lq.change_pct <= -CASE
+                WHEN LEFT(lq.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                WHEN LEFT(lq.stock_code, 1) IN ('4', '8') THEN 29.95
+                WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                ELSE 9.95 END) AS limit_down,
             ROUND(AVG(lq.change_pct)::numeric, 3) AS avg_pct,
             SUM(ff.main_net_inflow) / 1e8 AS main_inflow_yi
         FROM latest_quotes lq
         JOIN fund_flow ff ON ff.stock_code = lq.stock_code
                           AND ff.trade_date = lq.trade_date
+        LEFT JOIN stocks s ON s.stock_code = lq.stock_code
     """)
     return APIResponse.success(_jsonable(row))
 
