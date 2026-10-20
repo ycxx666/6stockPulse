@@ -44,7 +44,10 @@ async def _data_meta() -> dict:
             freshness = max(0, int((datetime.now(timezone.utc) - updated).total_seconds()))
         except Exception:
             freshness = None
-    stock_count = await db.fetch_val("SELECT COUNT(*) FROM stocks WHERE is_active = TRUE")
+    total_row = await db.fetch_one(
+        "SELECT total FROM market_breadth ORDER BY snapshot_time DESC LIMIT 1")
+    stock_count = (dict(total_row).get("total") if total_row else None) \
+        or await db.fetch_val("SELECT COUNT(*) FROM stocks WHERE is_active = TRUE")
     return {
         "data_updated_at": updated.isoformat() if hasattr(updated, "isoformat") else updated,
         "is_trading_hours": in_trading_hours(),

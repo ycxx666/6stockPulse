@@ -173,7 +173,15 @@ async def compute_global_sentiment() -> dict:
     global_news_score = 50  # 暂时中性
     factors["全球新闻"] = _factor(None, global_news_score, 20)
 
-    total_score = sum(f["normalized"] * f["weight"] / 100 for f in factors.values())
+    # 缺失值降权：raw=null 的因子 weight 置 0（参照连板做法，避免中性值稀释总分）
+    for f in factors.values():
+        if f.get("raw") is None:
+            f["weight"] = 0
+            f["weight_applied"] = 0
+
+    # 加权求和（用实际权重和归一化）
+    total_weight = sum(f["weight"] for f in factors.values())
+    total_score = sum(f["normalized"] * f["weight"] for f in factors.values()) / max(total_weight, 1)
     total_score = max(5, min(95, int(total_score)))
 
     result = {

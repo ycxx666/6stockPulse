@@ -234,7 +234,7 @@ async def main():
                 print(f"[{time.strftime('%H:%M:%S')}] collected {n} in {time.time()-started:.1f}s")
             except Exception as e:
                 print(f"[{time.strftime('%H:%M:%S')}] error: {e}")
-            await asyncio.sleep(max(30, 90 - int(time.time() - started)))
+            await asyncio.sleep(max(10, 30 - int(time.time() - started)))
     finally:
         await db.close_pool()
 

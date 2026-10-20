@@ -270,17 +270,20 @@ async def _detect_negative_announcement_risk(now: datetime) -> list[dict]:
     """)
     signals = []
     for r in rows:
+        title = r.get("title") or ""
+        # 利空落地：减持计划"实施完毕/完成/期限届满"属利空出尽，降级为 info
+        faded = any(w in title for w in ("实施完毕", "实施完成", "期限届满", "减持计划实施"))
         signals.append({
             "signal_type": "risk",
-            "title": f"{r['stock_code']} 利空公告: {r['title'][:40]}",
-            "summary": r['title'][:150],
+            "title": f"{r['stock_code']} {'利空落地' if faded else '利空公告'}: {title[:40]}",
+            "summary": title[:150],
             "evidence": [
                 {"type": "announcement", "value": r.get("ann_type", "")},
-                {"type": "title", "value": r.get("title", "")[:60]},
+                {"type": "title", "value": title[:60]},
             ],
             "direction": "bearish",
-            "confidence": 0.75,
-            "severity": "critical",
+            "confidence": 0.4 if faded else 0.75,
+            "severity": "info" if faded else "critical",
             "generated_at": now,
         })
     return signals

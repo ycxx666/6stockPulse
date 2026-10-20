@@ -364,7 +364,7 @@ def register_all(svc: SchedulerService):
     async def breadth_smart():
         if in_trading_hours():
             await job_market_breadth()
-    svc.add_interval(breadth_smart, seconds=30, id="market_breadth")
+    svc.add_interval(breadth_smart, seconds=15, id="market_breadth")
 
     # ── Phase 2 新增任务 ──
 
@@ -378,7 +378,7 @@ def register_all(svc: SchedulerService):
     async def sentiment_smart():
         if is_market_open():
             await job_sentiment_snapshot()
-    svc.add_interval(sentiment_smart, seconds=60, id="sentiment")
+    svc.add_interval(sentiment_smart, seconds=30, id="sentiment")
 
     # 分钟聚合 60 秒 (仅交易时段)
     async def minute_smart():
@@ -395,7 +395,7 @@ def register_all(svc: SchedulerService):
     async def signals_smart():
         if is_market_open():
             await job_generate_signals()
-    svc.add_interval(signals_smart, seconds=300, id="generate_signals")
+    svc.add_interval(signals_smart, seconds=120, id="generate_signals")
 
     # 全文抓取 10 分钟
     svc.add_interval(job_enrich_news_content, seconds=600, id="enrich_news")

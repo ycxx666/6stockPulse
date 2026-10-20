@@ -54,11 +54,11 @@ class RealtimeConfig:
 @dataclass
 class SchedulerConfig:
     """定时任务配置"""
-    sina_news_interval:    int = 30         # 新闻 30 秒
-    fund_flow_interval:    int = 60         # 资金流 1 分钟
-    sector_flow_interval:  int = 120        # 板块 2 分钟
-    stock_news_interval:   int = 300        # 个股新闻 5 分钟
-    ann_interval:          int = 600        # 公告 10 分钟
+    sina_news_interval:    int = 15         # 新闻 15 秒
+    fund_flow_interval:    int = 30         # 资金流 30 秒
+    sector_flow_interval:  int = 60         # 板块 1 分钟
+    stock_news_interval:   int = 120        # 个股新闻 2 分钟
+    ann_interval:          int = 300        # 公告 5 分钟
     prune_news_hours:      int = 168        # 新闻保留 7 天
     # ── 全球指数 (VIX 等) 实时刷新间隔 ──
     # 默认 15 秒 (交易时段), 可通过环境变量 GLOBAL_INDEX_INTERVAL 调整
