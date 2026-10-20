@@ -85,18 +85,30 @@ async def get_latest_breadth() -> dict:
 
 # ────────── 量能对比 ──────────
 async def get_volume_comparison() -> dict:
-    """今日 vs 昨日同期成交量/成交额"""
+    """今日 vs 昨日成交量/成交额 (每股取当日最后一条累计快照, 避免分钟明细重复求和)"""
     today = date.today()
     row = await db.fetch_one("""
         SELECT
-            (SELECT COALESCE(SUM(amount), 0) FROM stock_prices
-             WHERE trade_date = $1) AS today_amount,
-            (SELECT COALESCE(SUM(amount), 0) FROM stock_prices
-             WHERE trade_date = $1 - INTERVAL '1 day') AS yesterday_amount,
-            (SELECT COALESCE(SUM(volume), 0) FROM stock_prices
-             WHERE trade_date = $1) AS today_volume,
-            (SELECT COALESCE(SUM(volume), 0) FROM stock_prices
-             WHERE trade_date = $1 - INTERVAL '1 day') AS yesterday_volume
+            (SELECT COALESCE(SUM(amount), 0) FROM (
+                SELECT DISTINCT ON (stock_code) amount
+                FROM stock_prices WHERE trade_date = $1
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS today_amount,
+            (SELECT COALESCE(SUM(amount), 0) FROM (
+                SELECT DISTINCT ON (stock_code) amount
+                FROM stock_prices WHERE trade_date = $1 - INTERVAL '1 day'
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS yesterday_amount,
+            (SELECT COALESCE(SUM(volume), 0) FROM (
+                SELECT DISTINCT ON (stock_code) volume
+                FROM stock_prices WHERE trade_date = $1
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS today_volume,
+            (SELECT COALESCE(SUM(volume), 0) FROM (
+                SELECT DISTINCT ON (stock_code) volume
+                FROM stock_prices WHERE trade_date = $1 - INTERVAL '1 day'
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS yesterday_volume
     """, today)
     if not row:
         return {"today_amount_yi": 0, "yesterday_amount_yi": 0,
@@ -116,13 +128,17 @@ async def get_volume_comparison() -> dict:
 
 # ────────── 赚钱效应 ──────────
 async def get_profit_effect() -> dict:
-    """计算赚钱效应指标"""
-    # 简化版: 基于涨停股次日表现
+    """计算赚钱效应指标 (简化版: 基于涨停股次日表现; 涨停按板别阈值判定)"""
     row = await db.fetch_one("""
         WITH yesterday_limit_up AS (
-            SELECT stock_code FROM stock_prices
-            WHERE trade_date = CURRENT_DATE - INTERVAL '1 day'
-              AND change_pct >= 9.95
+            SELECT p.stock_code FROM stock_prices p
+            LEFT JOIN stocks s ON s.stock_code = p.stock_code
+            WHERE p.trade_date = CURRENT_DATE - INTERVAL '1 day'
+              AND p.change_pct >= CASE
+                    WHEN LEFT(p.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                    WHEN LEFT(p.stock_code, 1) IN ('4', '8') THEN 29.95
+                    WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                    ELSE 9.95 END
         ),
         today_perf AS (
             SELECT p.stock_code, p.change_pct
@@ -290,46 +306,8 @@ async def get_concept_sustainability(limit: int = 10) -> list[dict]:
 
 # ────────── 赚钱效应 (增强版) ──────────
 async def get_enhanced_profit_effect() -> dict:
+    """增强版赚钱效应 (统一走 application.market.analyzer 的真实计算:
+    上一交易日涨停股今日表现 + 封板率/炸板率, 无样本时返回空态不编造)。
     """
-    增强版赚钱效应:
-    - 昨日涨停今日表现
-    - 封板率 / 炸板率
-    - 追涨/抄底收益
-    """
-    from datetime import date, timedelta
-    today = date.today()
-    yesterday = today - timedelta(days=1)
-
-    # 昨日涨停股今日表现
-    row = await db.fetch_one("""
-        WITH y_limit AS (
-            SELECT stock_code, close FROM stock_prices
-            WHERE trade_date = $1 AND change_pct >= 9.95
-        ),
-        today_perf AS (
-            SELECT p.stock_code,
-                   y.close AS prev_close,
-                   FIRST_VALUE(p.open)  OVER w AS open_p,
-                   MAX(p.high)          OVER w AS high_p,
-                   LAST_VALUE(p.close)  OVER w AS close_p
-            FROM stock_prices p
-            JOIN y_limit y ON y.stock_code = p.stock_code
-            WHERE p.trade_date = $2
-            WINDOW w AS (PARTITION BY p.stock_code ORDER BY p.trade_time)
-        )
-        SELECT
-            COUNT(DISTINCT stock_code) AS sample,
-            ROUND(AVG((open_p - prev_close)/prev_close*100)::numeric, 2) AS avg_open_return,
-            ROUND(AVG((high_p - prev_close)/prev_close*100)::numeric, 2) AS avg_high_return,
-            ROUND(AVG((close_p - prev_close)/prev_close*100)::numeric, 2) AS avg_close_return
-        FROM today_perf
-    """, yesterday, today)
-
-    if not row or not row.get("sample"):
-        return {"sample_count": 0, "avg_open_return": 0, "avg_high_return": 0,
-                "avg_close_return": 0, "seal_rate": 0, "break_rate": 0}
-
-    r = dict(row)
-    r["seal_rate"] = 0.85  # TODO: 需要涨停封板明细数据
-    r["break_rate"] = 0.15
-    return r
+    from application.market.analyzer import get_enhanced_profit_effect as _impl
+    return await _impl()

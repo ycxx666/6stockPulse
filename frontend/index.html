@@ -246,7 +246,7 @@
           </div>
 
           <div class="sub-card">
-            <div class="sub-title">▥ 全 A 分钟量能走势（今日 vs 昨日）</div>
+            <div class="sub-title">▥ 上证指数量能走势（今日 vs 上一交易日）</div>
             <div class="chart-wrap"><canvas id="volumeChart"></canvas></div>
             <div class="chart-footer">
               <span><i class="legend-dot" style="background:#ff5d68"></i>今日</span>
@@ -403,7 +403,11 @@
       try {
         const v = await fetchJson(CONFIG.endpoints.volume);
         const t = Number(v && v.today_total_amount) || 0, y = Number(v && v.yesterday_total_amount) || 0;
-        if (el1) setTextIfChanged(el1, (t > 0 || y > 0) ? `今累计 ${(t/1e8).toFixed(1)}亿 / 昨 ${(y/1e8).toFixed(1)}亿` : '暂无当日量能');
+        if (el1) {
+          if (t > 0) setTextIfChanged(el1, `今累计 ${(t/1e8).toFixed(1)}亿 / 昨 ${(y/1e8).toFixed(1)}亿`);
+          else if (y > 0) setTextIfChanged(el1, `上一交易日累计 ${(y/1e8).toFixed(1)}亿`);
+          else setTextIfChanged(el1, '暂无当日量能');
+        }
         if (el2) {
           if (t > 0 && y > 0) {
             const diff = (t - y) / y * 100;

@@ -85,18 +85,30 @@ async def get_latest_breadth() -> dict:
 
 # ────────── 量能对比 ──────────
 async def get_volume_comparison() -> dict:
-    """今日 vs 昨日同期成交量/成交额"""
+    """今日 vs 昨日成交量/成交额 (每股取当日最后一条累计快照, 避免分钟明细重复求和)"""
     today = date.today()
     row = await db.fetch_one("""
         SELECT
-            (SELECT COALESCE(SUM(amount), 0) FROM stock_prices
-             WHERE trade_date = $1) AS today_amount,
-            (SELECT COALESCE(SUM(amount), 0) FROM stock_prices
-             WHERE trade_date = $1 - INTERVAL '1 day') AS yesterday_amount,
-            (SELECT COALESCE(SUM(volume), 0) FROM stock_prices
-             WHERE trade_date = $1) AS today_volume,
-            (SELECT COALESCE(SUM(volume), 0) FROM stock_prices
-             WHERE trade_date = $1 - INTERVAL '1 day') AS yesterday_volume
+            (SELECT COALESCE(SUM(amount), 0) FROM (
+                SELECT DISTINCT ON (stock_code) amount
+                FROM stock_prices WHERE trade_date = $1
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS today_amount,
+            (SELECT COALESCE(SUM(amount), 0) FROM (
+                SELECT DISTINCT ON (stock_code) amount
+                FROM stock_prices WHERE trade_date = $1 - INTERVAL '1 day'
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS yesterday_amount,
+            (SELECT COALESCE(SUM(volume), 0) FROM (
+                SELECT DISTINCT ON (stock_code) volume
+                FROM stock_prices WHERE trade_date = $1
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS today_volume,
+            (SELECT COALESCE(SUM(volume), 0) FROM (
+                SELECT DISTINCT ON (stock_code) volume
+                FROM stock_prices WHERE trade_date = $1 - INTERVAL '1 day'
+                ORDER BY stock_code, trade_time DESC
+            ) d) AS yesterday_volume
     """, today)
     if not row:
         return {"today_amount_yi": 0, "yesterday_amount_yi": 0,
@@ -375,10 +387,16 @@ async def get_enhanced_profit_effect() -> dict:
     # 2) 昨日涨停股 + 今日日聚合(每股一行)
     rows = await db.fetch_all("""
         WITH y_limit AS (
-            SELECT stock_code, MAX(close) AS prev_close
-            FROM stock_prices
-            WHERE trade_date = $1 AND change_pct >= 9.95
-            GROUP BY stock_code
+            SELECT p.stock_code, MAX(p.close) AS prev_close
+            FROM stock_prices p
+            LEFT JOIN stocks s ON s.stock_code = p.stock_code
+            WHERE p.trade_date = $1
+              AND p.change_pct >= CASE
+                    WHEN LEFT(p.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                    WHEN LEFT(p.stock_code, 1) IN ('4', '8') THEN 29.95
+                    WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                    ELSE 9.95 END
+            GROUP BY p.stock_code
         ),
         today_agg AS (
             SELECT p.stock_code,

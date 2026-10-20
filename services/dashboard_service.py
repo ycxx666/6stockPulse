@@ -239,12 +239,17 @@ async def _get_ladder() -> list[dict]:
                 cnt,
                 COUNT(*) AS count
             FROM (
-                SELECT stock_code,
-                       COUNT(*) FILTER (WHERE change_pct >= 9.95) AS cnt
-                FROM stock_prices
-                WHERE trade_date >= CURRENT_DATE - INTERVAL '10 days'
-                  AND change_pct >= 9.9
-                GROUP BY stock_code
+                SELECT p.stock_code,
+                       COUNT(*) FILTER (WHERE p.change_pct >= CASE
+                           WHEN LEFT(p.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                           WHEN LEFT(p.stock_code, 1) IN ('4', '8') THEN 29.95
+                           WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                           ELSE 9.95 END) AS cnt
+                FROM stock_prices p
+                LEFT JOIN stocks s ON s.stock_code = p.stock_code
+                WHERE p.trade_date >= CURRENT_DATE - INTERVAL '10 days'
+                  AND p.change_pct >= 4.95
+                GROUP BY p.stock_code
             ) t
             WHERE cnt >= 2
             GROUP BY label, cnt
