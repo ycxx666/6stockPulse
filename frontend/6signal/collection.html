@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="api-url" content="" />
+  <title>6Signal · 采集情况</title>
+  <link rel="stylesheet" href="styles.css?v=23cd0da6fe9d" />
+  <link rel="stylesheet" href="collection.css?v=20261016-2" />
+</head>
+<body data-page="collection">
+  <div class="app-shell">
+    <div class="window-strip"><span class="window-dots">● ● ●</span><span>6Signal · 数据采集后台</span><span class="window-meta">存储与采集监控 · 北京时间</span></div>
+    <header class="topbar top">
+      <a class="brand" href="index.html"><span class="brand-mark">⌁</span><span><b>6SIGNAL</b><small>可追溯的跨市场情报</small></span></a>
+      <nav class="nav" aria-label="主导航">
+        <a class="nav-link" href="index.html">全球市场</a><a class="nav-link" href="ashare.html">A股市场</a><a class="nav-link" href="crypto.html">加密市场</a><a class="nav-link" href="news.html">新闻中心</a><a class="nav-link active" aria-current="page" href="collection.html">采集情况</a>
+      </nav>
+      <div class="top-actions"><span class="refresh-note">每 3 分钟更新</span><button class="icon-button" id="collectionRefresh" aria-label="刷新采集情况" title="刷新采集情况">⟳</button><time id="collectionClock">--:--:--</time></div>
+    </header>
+    <main class="page-content collection-content">
+      <section class="page-heading">
+        <div><span class="eyebrow">COLLECTION MONITOR</span><h1>采集情况</h1><p>查看已采集的数据、存储占用与覆盖时间，定位停采和数据异常。</p></div>
+        <div class="heading-status"><span id="collectionStateDot" class="status-dot"></span><span id="collectionAsOf">正在生成采集快照…</span></div>
+      </section>
+      <div id="collectionError" class="collection-message error" role="alert" hidden></div>
+      <div id="collectionPartial" class="collection-message warning" role="status" hidden>部分统计未完成，缺失的数量和大小已留空，请稍后刷新。</div>
+      <section class="hero-grid" aria-label="采集概览">
+        <article class="metric-card accent"><span class="metric-label">采集项目</span><strong id="collectionDatasetCount">—</strong><small id="collectionUpdating">等待统计</small></article>
+        <article class="metric-card"><span class="metric-label">原始数据占用</span><strong id="collectionRawSize">—</strong><small>已保留的压缩原始文件</small></article>
+        <article class="metric-card"><span class="metric-label">数据库占用</span><strong id="collectionDbSize">—</strong><small id="collectionDbTables">数据与索引合计</small></article>
+        <article class="metric-card"><span class="metric-label">需关注</span><strong id="collectionAttention">—</strong><small>异常、待核对或未配置的项目</small></article>
+      </section>
+      <section class="collection-disk" aria-label="磁盘容量">
+        <div><span id="collectionDiskLabel">磁盘容量待统计</span><strong id="collectionDiskFree">—</strong></div>
+        <div class="collection-disk-track" role="progressbar" aria-label="磁盘使用率" aria-valuemin="0" aria-valuemax="100" id="collectionDiskBar"><i></i></div>
+      </section>
+      <section class="section-card collection-panel" aria-labelledby="collectionTableHeading">
+        <div class="section-head"><div><span class="eyebrow">DATA INVENTORY</span><h2 id="collectionTableHeading">数据采集明细</h2></div><span id="collectionVisibleCount" class="section-note" aria-live="polite">等待数据</span></div>
+        <div class="collection-toolbar">
+          <label class="collection-search" for="collectionSearch"><span>搜索</span><input id="collectionSearch" type="search" placeholder="数据名称、来源或存储位置" autocomplete="off" /></label>
+          <label for="collectionCategory"><span>类别</span><select id="collectionCategory"><option value="">全部类别</option></select></label>
+          <label for="collectionStatus"><span>状态</span><select id="collectionStatus"><option value="">全部状态</option><option value="attention">仅需关注</option><option value="LIVE">持续更新</option><option value="HISTORY">已有历史</option><option value="UNCONFIGURED">未配置</option><option value="REMOVED">已移除</option></select></label>
+          <button id="collectionReset" class="filter" type="button">清空筛选</button>
+        </div>
+        <div class="collection-table-wrap" tabindex="0" role="region" aria-label="可横向滚动的采集明细表">
+          <table class="data-table collection-table">
+            <caption class="collection-sr-only">采集数据的数量、大小、位置、覆盖时间、最近入库及运行状态。</caption>
+            <thead><tr><th scope="col">数据 / 来源</th><th scope="col">状态</th><th scope="col">已采集数量</th><th scope="col">占用大小</th><th scope="col">存储位置</th><th scope="col">覆盖时间</th><th scope="col">最近入库 / 检查</th><th scope="col">说明</th></tr></thead>
+            <tbody id="collectionRows"><tr><td colspan="8" class="empty loading">正在读取真实采集与存储信息，首次统计可能需要数秒…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="collection-footnotes"><p>表格可左右滚动查看完整列。时间统一显示为北京时间；后台统计最多缓存 3 分钟。</p><p><b>共享</b> 表示多行共用一张数据库表，所示大小为整表含索引占用，不可重复相加。<b>未统计</b> 表示没有执行全表计数，不代表零条记录。</p><p>数量与占用为当前保留的数据，覆盖起止不代表中间无缺口；最近入库、采集检查和数据事件时间分别展示。</p></div>
+      </section>
+    </main>
+  </div>
+  <script src="collection.js?v=20261016-2"></script>
+</body>
+</html>
