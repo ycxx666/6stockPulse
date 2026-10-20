@@ -128,13 +128,17 @@ async def get_volume_comparison() -> dict:
 
 # ────────── 赚钱效应 ──────────
 async def get_profit_effect() -> dict:
-    """计算赚钱效应指标"""
-    # 简化版: 基于涨停股次日表现
+    """计算赚钱效应指标 (简化版: 基于涨停股次日表现; 涨停按板别阈值判定)"""
     row = await db.fetch_one("""
         WITH yesterday_limit_up AS (
-            SELECT stock_code FROM stock_prices
-            WHERE trade_date = CURRENT_DATE - INTERVAL '1 day'
-              AND change_pct >= 9.95
+            SELECT p.stock_code FROM stock_prices p
+            LEFT JOIN stocks s ON s.stock_code = p.stock_code
+            WHERE p.trade_date = CURRENT_DATE - INTERVAL '1 day'
+              AND p.change_pct >= CASE
+                    WHEN LEFT(p.stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                    WHEN LEFT(p.stock_code, 1) IN ('4', '8') THEN 29.95
+                    WHEN s.stock_name LIKE '%ST%' THEN 4.95
+                    ELSE 9.95 END
         ),
         today_perf AS (
             SELECT p.stock_code, p.change_pct
@@ -160,7 +164,8 @@ async def get_profit_effect() -> dict:
 async def get_limit_up_ladder() -> list[dict]:
     """连板梯队(连续交易日口径)。
 
-    以“最近交易日”为尾,统计各股连续涨停(收盘 change_pct>=9.95)的**连续交易日**高度,
+    以“最近交易日”为尾,统计各股连续涨停(收盘涨幅达所属板别涨停阈值:
+    科创创业 +20% / 北交所 +30% / 主板ST +5% / 主板 +10%)的**连续交易日**高度,
     再按高度分档(2板/3板/4板/5板+)。snapshot 与 /api/short-term/limit-up-ladder 共用本实现。
     """
     from datetime import date as _date, timedelta
@@ -177,16 +182,22 @@ async def get_limit_up_ladder() -> list[dict]:
     day_idx = {d: i for i, d in enumerate(days)}
     last_day = days[-1]
 
-    # 每股“收盘涨停日”
+    # 每股“收盘涨停日”(按板别阈值判定)
     rows = await db.fetch_all("""
-        SELECT stock_code, trade_date FROM (
-            SELECT stock_code, trade_date,
-                   (array_agg(change_pct ORDER BY trade_time DESC))[1] AS close_pct
-            FROM stock_prices
-            WHERE trade_date >= $1
-            GROUP BY stock_code, trade_date
+        SELECT p.stock_code, p.trade_date FROM (
+            SELECT p.stock_code, p.trade_date,
+                   (array_agg(p.change_pct ORDER BY p.trade_time DESC))[1] AS close_pct,
+                   COALESCE(s.stock_name, '') AS stock_name
+            FROM stock_prices p
+            LEFT JOIN stocks s ON s.stock_code = p.stock_code
+            WHERE p.trade_date >= $1
+            GROUP BY p.stock_code, p.trade_date, s.stock_name
         ) t
-        WHERE close_pct >= 9.95
+        WHERE close_pct >= CASE
+                WHEN LEFT(stock_code, 3) IN ('688', '689', '300', '301') THEN 19.95
+                WHEN LEFT(stock_code, 1) IN ('4', '8') THEN 29.95
+                WHEN stock_name LIKE '%ST%' THEN 4.95
+                ELSE 9.95 END
         ORDER BY stock_code, trade_date
     """, since)
 

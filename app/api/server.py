@@ -19,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from infrastructure.database import postgres as db
+from db import database as db_service  # 旧池：services/* 层使用
 from core.config import API
 from application.realtime.service import realtime
 from app.api.routes.dashboard import router as dashboard_router
@@ -36,11 +37,13 @@ logger = logging.getLogger(__name__)
 # ────────── 应用生命周期 ──────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # API 服务仅负责 DB 连接池（调度 & 实时采集由 worker 进程独立管理）
+    # API 服务负责两个 DB 连接池（infrastructure 新池 + services 层使用的 db.database 旧池）
     await db.init_pool()
+    await db_service.init_pool()
     logger.info("6stockPulse v4 API started on %s:%d", API.host, API.port)
     yield
     await db.close_pool()
+    await db_service.close_pool()
 
 
 app = FastAPI(title=API.title, version=API.version, lifespan=lifespan)

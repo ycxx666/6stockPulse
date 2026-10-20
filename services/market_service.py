@@ -163,36 +163,9 @@ async def get_profit_effect() -> dict:
 
 # ────────── 连板梯队 ──────────
 async def get_limit_up_ladder() -> list[dict]:
-    """识别连续涨停的连板梯队"""
-    rows = await db.fetch_all("""
-        WITH consecutive_days AS (
-            SELECT stock_code,
-                   COUNT(DISTINCT trade_date) AS days
-            FROM stock_prices
-            WHERE trade_date >= CURRENT_DATE - INTERVAL '15 days'
-              AND change_pct >= 9.9
-            GROUP BY stock_code
-        )
-        SELECT
-            CASE
-                WHEN days = 2 THEN '2板'
-                WHEN days = 3 THEN '3板'
-                WHEN days = 4 THEN '4板'
-                WHEN days >= 5 THEN '5板+'
-            END AS label,
-            days,
-            COUNT(*) AS count
-        FROM consecutive_days
-        WHERE days >= 2
-        GROUP BY label, days
-        ORDER BY days
-    """)
-    if not rows:
-        return []
-    max_count = max(r["count"] for r in rows) or 1
-    return [{"label": r["label"], "count": r["count"],
-             "bar_pct": round(r["count"] / max_count * 100, 1)}
-            for r in rows]
+    """连板梯队 (统一走 application.market.analyzer 的连续交易日口径, 涨停按板别阈值判定)"""
+    from application.market.analyzer import get_limit_up_ladder as _impl
+    return await _impl()
 
 
 # ────────── 概念持续性 ──────────
@@ -211,61 +184,20 @@ async def get_concept_leaders(limit: int = 6) -> list[dict]:
 
 # ────────── 分钟聚合: 指数分时图 ──────────
 async def get_index_intraday(symbol: str = "000001", date_str: str | None = None) -> list[dict]:
+    """获取指数分钟级 OHLCV (统一走 application.market.analyzer 的新浪指数分钟线)。
+    禁止查 stock_prices: 其中 '000001' 是平安银行(深市), 与指数无关。
     """
-    获取指数分钟级 OHLCV (供前端分时图)
-    symbol: 000001=上证, 399001=深证, 399006=创业板
-    """
-    from datetime import date
-    trade_date = date.fromisoformat(date_str) if date_str else date.today()
-    rows = await db.fetch_all("""
-        SELECT trade_time::text AS t, open, high, low, close, volume, amount
-        FROM stock_prices
-        WHERE stock_code = $1 AND trade_date = $2
-        ORDER BY trade_time ASC
-    """, symbol, trade_date)
-    if not rows:
-        return []
-    return [dict(r) for r in rows]
+    from application.market.analyzer import get_index_intraday as _impl
+    return await _impl(symbol, date_str)
 
 
 # ────────── 分钟量能对比 ──────────
 async def get_minute_volume_comparison() -> dict:
+    """上证指数 今日 vs 上一交易日 分钟级量能对比 (统一走 application.market.analyzer)。
+    stock_prices 的 '000001' 是平安银行, 严禁用于指数量能。
     """
-    今日 vs 昨日 分钟级成交量对比
-    返回 {today: [{t, close, volume}], yesterday: [{t, close, volume}]}
-    """
-    from datetime import date, timedelta
-    today = date.today()
-    yesterday = today - timedelta(days=1)
-
-    today_rows = await db.fetch_all("""
-        SELECT trade_time::text AS t, close, volume
-        FROM stock_prices
-        WHERE stock_code = '000001' AND trade_date = $1
-        ORDER BY trade_time ASC
-    """, today)
-
-    yesterday_rows = await db.fetch_all("""
-        SELECT trade_time::text AS t, close, volume
-        FROM stock_prices
-        WHERE stock_code = '000001' AND trade_date = $1
-        ORDER BY trade_time ASC
-    """, yesterday)
-
-    return {
-        "today": [dict(r) for r in today_rows],
-        "yesterday": [dict(r) for r in yesterday_rows],
-        "today_total_amount": await _get_daily_amount(today),
-        "yesterday_total_amount": await _get_daily_amount(yesterday),
-    }
-
-
-async def _get_daily_amount(d: date) -> float:
-    row = await db.fetch_one("""
-        SELECT COALESCE(SUM(amount), 0) AS total
-        FROM stock_prices WHERE trade_date = $1
-    """, d)
-    return float(row["total"]) if row else 0.0
+    from application.market.analyzer import get_minute_volume_comparison as _impl
+    return await _impl()
 
 
 # ────────── 概念持续性评分 ──────────

@@ -15,7 +15,7 @@ from typing import Any, AsyncIterator, Iterable
 
 import asyncpg
 
-from config import DB as DB_CONFIG
+from core.config import DB as DB_CONFIG
 
 logger = logging.getLogger(__name__)
 

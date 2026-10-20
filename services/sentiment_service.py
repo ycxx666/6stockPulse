@@ -106,11 +106,10 @@ async def compute_ashare_sentiment() -> dict:
     label = _score_label(total_score)
 
     result = {
-        "scope": "global" if False else "ashare",
+        "scope": "ashare",
         "score": total_score,
         "label": label,
-        "factors": {k: {"raw": v["raw"], "normalized": v["normalized"], "weight": v["weight"]}
-                     for k, v in factors.items()},
+        "factors": {k: dict(v) for k, v in factors.items()},
         "snapshot_time": now,
     }
     result["scope"] = "ashare"  # fix
@@ -125,7 +124,10 @@ async def compute_ashare_sentiment() -> dict:
 
 
 def _factor(raw_value, normalized: int, weight: int) -> dict:
-    return {"raw": raw_value, "normalized": normalized, "weight": weight}
+    d = {"raw": raw_value, "normalized": normalized, "weight": weight}
+    if raw_value is None:
+        d["no_data"] = True  # raw 缺失，normalized 为默认值填充
+    return d
 
 
 def _score_label(score: int) -> str:
@@ -175,11 +177,10 @@ async def compute_global_sentiment() -> dict:
         "scope": "global",
         "score": total_score,
         "label": _score_label(total_score),
-        "long_count": global_index_score,   # 简化: 上涨市场数
+        "long_count": global_index_score,
         "neutral_count": 0,
         "short_count": 100 - global_index_score if global_index_score < 50 else 0,
-        "factors": {k: {"raw": v["raw"], "normalized": v["normalized"], "weight": v["weight"]}
-                     for k, v in factors.items()},
+        "factors": {k: dict(v) for k, v in factors.items()},
         "snapshot_time": now,
     }
 

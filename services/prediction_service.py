@@ -170,7 +170,12 @@ async def _get_volume_ratio() -> dict:
 async def _get_fund_direction() -> dict:
     row = await db.fetch_one("""
         SELECT COALESCE(SUM(main_net_inflow), 0) / 1e8 AS direction
-        FROM fund_flow WHERE trade_date = CURRENT_DATE
+        FROM (
+            SELECT DISTINCT ON (stock_code) stock_code, main_net_inflow
+            FROM fund_flow
+            WHERE trade_date = CURRENT_DATE
+            ORDER BY stock_code, trade_time DESC
+        ) t
     """)
     return {"direction": float(row["direction"]) if row else 0.0}
 

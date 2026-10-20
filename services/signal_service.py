@@ -154,7 +154,7 @@ async def _detect_volume_breakout_opportunity(now: datetime) -> list[dict]:
 
 
 async def _detect_positive_news_signal(now: datetime) -> list[dict]:
-    """正面新闻信号"""
+    """正面新闻信号（标题含负面词则跳过，避免利空被误标为利好）"""
     rows = await db.fetch_all("""
         SELECT title, sentiment, importance, stocks
         FROM news
@@ -162,10 +162,16 @@ async def _detect_positive_news_signal(now: datetime) -> list[dict]:
           AND sentiment > 0.3
           AND importance >= 3
         ORDER BY publish_time DESC
-        LIMIT 3
+        LIMIT 10
     """)
     signals = []
     for r in rows:
+        if len(signals) >= 3:
+            break
+        title = r.get("title") or ""
+        # 标题负面词二次校验：情感分可能误判，标题含负面词直接跳过
+        if any(w in title for w in ("跌", "回落", "重挫", "走低", "收跌", "下挫", "暴跌", "下滑", "跌幅")):
+            continue
         stocks = r.get("stocks") or []
         signals.append({
             "signal_type": "opportunity",
