@@ -7,7 +7,7 @@ scheduler/task_registry.py
 支持 A 股交易日历、时段细分、频率自适应。
 """
 from __future__ import annotations
-from datetime import datetime, date, time as dtime, timedelta
+from datetime import datetime, date, time as dtime, timedelta, timezone
 from enum import Enum
 import logging
 
@@ -51,7 +51,8 @@ def is_trading_day(d: date | None = None) -> bool:
 def get_market_session(now: datetime | None = None) -> MarketSession:
     """获取当前市场时段"""
     if now is None:
-        now = datetime.now()
+        # 用北京时间判断（容器可能跑在 UTC，避免 8 小时时区错位）
+        now = datetime.now(timezone(timedelta(hours=8)))
 
     if not is_trading_day(now.date()):
         return MarketSession.CLOSED
