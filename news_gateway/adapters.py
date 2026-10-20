@@ -117,7 +117,7 @@ class BaseSourceAdapter:
         self.session.cookies.update(self.cookies)
         self.session.trust_env = self.proxy is None  # 有显式代理时忽略系统代理
         self._proxy_session: Optional[requests.Session] = None  # 惰性创建
-        self._direct_timeout: float = min(self.timeout, 6.0)  # 直连短超时,代理用全量
+        self._direct_timeout: float = min(self.timeout, 2.5)  # 直连短超时（教育网访问境外受限，缩短等待）,代理用全量
         self._last_req = 0.0
 
     # ── HTTP 基础（带节流 + tenacity 重试 + 直连→代理双路）──

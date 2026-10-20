@@ -3,7 +3,7 @@
   "_comment": "统一新闻源接入窗口 · 配置驱动 Schema. type ∈ standard_rss / google_news_rss / ft_rss / discover_from_web / rsshub_rss",
   "global": {
     "timeout": 15,
-    "retries": 2,
+    "retries": 1,
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36 6StockPulse/1.0",
     "request_interval": 1.0,
     "proxy": ""
