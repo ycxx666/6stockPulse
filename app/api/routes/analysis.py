@@ -48,3 +48,11 @@ async def trigger_signal_generation():
     from domain.signal.engine import generate_signals
     data = await generate_signals()
     return APIResponse.success({"count": len(data), "signals": data[:5]})
+
+
+@router.post("/api/predictions/recalc")
+async def recalc_prediction():
+    """手动触发次日方向研判重算（演示时供实时刷新，避免定时快照陈旧）"""
+    from domain.prediction.model import predict_next_session
+    data = await predict_next_session()
+    return APIResponse.success(data)
