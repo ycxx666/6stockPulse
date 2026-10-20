@@ -30,15 +30,24 @@ router = APIRouter(tags=["plugin"])
 
 
 async def _data_meta() -> dict:
-    """数据新鲜度：最后更新时间 + 是否交易时段，标注非交易时段停更为正常。"""
+    """数据新鲜度：最后更新时间 + 是否交易时段 + 延迟秒数，标注非交易时段停更为正常。"""
+    from datetime import datetime, timezone
     from application.realtime.service import in_trading_hours
     row = await db.fetch_one(
-        "SELECT max(trade_time)::text AS data_updated_at "
+        "SELECT max(trade_time) AS data_updated_at "
         "FROM stock_prices WHERE trade_date = CURRENT_DATE")
     d = dict(row) if row else {}
+    updated = d.get("data_updated_at")
+    freshness = None
+    if updated is not None:
+        try:
+            freshness = max(0, int((datetime.now(timezone.utc) - updated).total_seconds()))
+        except Exception:
+            freshness = None
     return {
-        "data_updated_at": d.get("data_updated_at"),
+        "data_updated_at": updated.isoformat() if hasattr(updated, "isoformat") else updated,
         "is_trading_hours": in_trading_hours(),
+        "data_freshness_sec": freshness,
         "note": "非交易时段数据源返回固定收盘快照，数值不变化属正常",
     }
 
@@ -77,8 +86,7 @@ async def plugin_sentiment():
     global_data["score_type"] = "composite"
     return APIResponse.success({
         "ashare": ashare_data, "global": global_data,
-        "meta": await _data_meta(),
-    })
+    }, **(await _data_meta()))
 
 
 # ────────── 2. 市场宽度 ──────────
@@ -97,8 +105,7 @@ async def plugin_breadth():
         "breadth": breadth,
         "limit_up_ladder": ladder,
         "profit_effect": heat,
-        "meta": await _data_meta(),
-    })
+    }, **(await _data_meta()))
 
 
 # ────────── 3. 机会 / 风险信号 ──────────
@@ -148,7 +155,7 @@ async def plugin_prediction():
             "up_probability": 0.33, "flat_probability": 0.34, "down_probability": 0.33,
             "confidence": 0.5, "model_version": "rule-baseline-v1",
             "note": "暂无预测结果",
-        })
+        }, **(await _data_meta()))
     data = _row(row)
     # 附当前宽度快照，便于判断预测解释是否陈旧
     breadth = await db.fetch_one("""
@@ -164,7 +171,7 @@ async def plugin_prediction():
             "limit_up": breadth.get("limit_up"),
             "limit_down": breadth.get("limit_down"),
         }
-    return APIResponse.success(data)
+    return APIResponse.success(data, **(await _data_meta()))
 
 
 # ────────── 5. 板块资金流 ──────────
@@ -213,4 +220,35 @@ async def plugin_stock(symbol: str):
         "stock": _jsonable(stock),
         "quote": _jsonable(quote),
         "recent_kline": _jsonable(list(reversed(kline))),
-    })
+    }, **(await _data_meta()))
+
+
+# ────────── 7. 独立对账 ──────────
+@router.get("/plugin/verify")
+async def plugin_verify():
+    """独立对账：指数点位+时间戳、全市场成交额、样本股收盘价，供与外部行情源交叉验证。"""
+    indices = await db.fetch_all("""
+        SELECT symbol, name, price, change_pct, quote_time::text AS quote_time, is_stale
+        FROM market_quote_snapshot
+        WHERE symbol IN ('000001.SH', '399001.SZ', '399006.SZ')
+        ORDER BY symbol
+    """)
+    amount = await db.fetch_one("""
+        SELECT COALESCE(SUM(amount), 0) AS total_amount, COUNT(*) AS stocks
+        FROM (
+            SELECT DISTINCT ON (stock_code) stock_code, amount
+            FROM stock_prices WHERE trade_date = CURRENT_DATE
+            ORDER BY stock_code, trade_time DESC
+        ) t
+    """)
+    samples = await db.fetch_all("""
+        SELECT stock_code, close, change_pct, volume, amount, turnover_rate
+        FROM latest_quotes
+        WHERE stock_code IN ('600519', '000001', '600036', '601318')
+        ORDER BY stock_code
+    """)
+    return APIResponse.success({
+        "indices": [_row(r) for r in indices],
+        "market_amount": _jsonable(dict(amount)) if amount else {"total_amount": 0, "stocks": 0},
+        "sample_stocks": [_row(r) for r in samples],
+    }, **(await _data_meta()))
