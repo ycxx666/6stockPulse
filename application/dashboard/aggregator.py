@@ -218,42 +218,9 @@ async def _get_stats() -> list[dict]:
 
 
 async def _get_ladder() -> list[dict]:
-    """连板梯队 (数据不足时降级为空)"""
-    rows = await db.fetch_all("""
-        SELECT label, count
-        FROM (
-            SELECT
-                CASE
-                    WHEN cnt >= 5 THEN '5板+'
-                    ELSE cnt::text || '板'
-                END AS label,
-                cnt,
-                COUNT(*) AS count
-            FROM (
-                SELECT stock_code,
-                       COUNT(*) FILTER (WHERE change_pct >= 9.95) AS cnt
-                FROM stock_prices
-                WHERE trade_date >= CURRENT_DATE - INTERVAL '10 days'
-                  AND change_pct >= 9.9
-                GROUP BY stock_code
-            ) t
-            WHERE cnt >= 2
-            GROUP BY label, cnt
-        ) t2
-        ORDER BY
-            CASE label
-                WHEN '2板' THEN 1 WHEN '3板' THEN 2
-                WHEN '4板' THEN 3 WHEN '5板+' THEN 4
-            END
-    """)
-    if not rows:
-        return []
-    max_count = max(r.get("count", 0) for r in rows) or 1
-    return [
-        {"label": r["label"], "count": r["count"],
-         "bar_pct": round(r["count"] / max_count * 100, 1)}
-        for r in rows
-    ]
+    """连板梯队 (统一走 analyzer.get_limit_up_ladder 的连续交易日口径)"""
+    from application.market.analyzer import get_limit_up_ladder
+    return await get_limit_up_ladder()
 
 
 async def _get_news() -> list[dict]:
@@ -303,9 +270,9 @@ async def _get_prediction() -> dict:
     row = await db.fetch_one("""
         SELECT horizon, up_probability, flat_probability, down_probability,
                confidence, explanation, model_version,
-               generated_at::text AS generated_at
+               predicted_at::text AS generated_at
         FROM prediction_result
-        ORDER BY generated_at DESC LIMIT 1
+        ORDER BY predicted_at DESC LIMIT 1
     """)
     if not row:
         return _default_prediction()

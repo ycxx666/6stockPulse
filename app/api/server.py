@@ -9,13 +9,14 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from infrastructure.database import postgres as db
 from core.config import API
@@ -26,6 +27,8 @@ from app.api.routes.news import router as news_router
 from app.api.routes.sentiment import router as sentiment_router
 from app.api.routes.analysis import router as analysis_router
 from app.api.routes.hotspots import router as hotspots_router
+from app.api.routes.plugin import router as plugin_router
+from app.api.routes.v1 import router as v1_router
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +44,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=API.title, version=API.version, lifespan=lifespan)
+app.openapi_version = "3.0.3"
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,6 +54,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ── 可选 Bearer 鉴权（设置 API_TOKEN 环境变量后启用；为空则不校验）──
+API_TOKEN = os.getenv("API_TOKEN", "")
+
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    if API_TOKEN:
+        path = request.url.path
+        if path.startswith(("/api/", "/plugin/")):
+            if request.headers.get("Authorization", "") != f"Bearer {API_TOKEN}":
+                return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+    return await call_next(request)
+
+
 # ── 注册路由 ──
 app.include_router(dashboard_router)
 app.include_router(market_router)
@@ -57,6 +76,8 @@ app.include_router(news_router)
 app.include_router(sentiment_router)
 app.include_router(analysis_router)
 app.include_router(hotspots_router)
+app.include_router(plugin_router)
+app.include_router(v1_router)
 
 # ── 静态文件 (前端) ──
 from pathlib import Path

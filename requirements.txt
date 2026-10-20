@@ -12,6 +12,12 @@ redis[hiredis]>=5.0
 # Phase 6: 监控
 prometheus-client>=0.19
 
+# 新闻网关 (RSS 多源新闻采集)
+feedparser>=6.0
+requests>=2.31
+tenacity>=8.0
+beautifulsoup4>=4.12
+
 # LLM (按需安装)
 openai>=1.0
 # anthropic>=0.30

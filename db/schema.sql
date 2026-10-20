@@ -111,7 +111,8 @@ CREATE TABLE IF NOT EXISTS fund_flow (
 CREATE TABLE IF NOT EXISTS fund_flow_default PARTITION OF fund_flow DEFAULT;
 
 CREATE INDEX IF NOT EXISTS idx_ff_code_time ON fund_flow (stock_code, trade_time DESC);
-CREATE INDEX IF NOT EXISTS idx_ff_main       ON fund_flow (main_net_inflow DESC) WHERE trade_date = CURRENT_DATE;
+-- PG16: 分区表部分索引谓词必须 IMMUTABLE，CURRENT_DATE(stable) 不允许 → 去掉谓词建全量索引
+CREATE INDEX IF NOT EXISTS idx_ff_main       ON fund_flow (main_net_inflow DESC);
 
 -- ────────────────────────────────────────────────────────────
 -- 5. 板块资金流向 (sector_fund_flow) — 当日 + 历史

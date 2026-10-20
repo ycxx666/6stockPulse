@@ -118,7 +118,7 @@ class RealtimeService:
                     await db.refresh_latest_quotes()
                     # 计算并推送市场宽度
                     try:
-                        from domain.market import compute_and_store_breadth
+                        from services.market_service import compute_and_store_breadth
                         breadth = await compute_and_store_breadth()
                         await self._broadcast({
                             "type": "market.breadth.updated",
@@ -129,7 +129,7 @@ class RealtimeService:
                         logger.warning("market_breadth broadcast failed", exc_info=True)
                 # 使聚合缓存失效
                 try:
-                    from domain.dashboard import invalidate_snapshot
+                    from services.dashboard_service import invalidate_snapshot
                     invalidate_snapshot()
                 except Exception:
                     logger.warning("snapshot invalidation failed", exc_info=True)

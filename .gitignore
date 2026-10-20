@@ -26,12 +26,20 @@ Thumbs.db
 logs/
 *.log
 
+# 运行时数据（SQLite / 缓存）
+data/
+
 # Misc
 *.db
 *.sqlite3
 
 # Secrets (登录态 cookie, 绝不入库)
 config/cookies/
+
+# 旧代码树（与 app/api 重复，保留在本地但不入库）
+api/
+# 6signal 前端源（已复制到 frontend/6signal，避免双份）
+6signal/
 
 # 无关/宿主工具目录 (误提交清理 2026-09-04)
 worldmonitor-main/

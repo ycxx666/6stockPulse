@@ -59,8 +59,8 @@ class EastMoneyFundFlow(BaseCrawler):
         return {
             "stock_code":      str(item.get("f12", "")),
             "trade_date":      date.today(),
-            "trade_time":      datetime.now().isoformat(timespec="seconds"),
-            "main_net_inflow":   self.to_float(item.get("f62")) * 10000,
+            "trade_time":      datetime.now(),
+            "main_net_inflow":   self.to_float(item.get("f62")),
             "main_net_ratio":    self.to_float(item.get("f184")),
             "super_large_net":   self.to_float(item.get("f66")) * 10000,
             "super_large_ratio": self.to_float(item.get("f69")),
@@ -102,6 +102,44 @@ class EastMoneySector(BaseCrawler):
                     conflict_target="trade_date, sector_code, trade_time"
                 )
                 success = inserted
+            # 补充龙头: 用 requests 通道(aiohttp 被东财指纹拒绝, curl/requests 可用)
+            import requests as _rq
+
+            def _leader(code):
+                try:
+                    resp = _rq.get(
+                        "https://push2delay.eastmoney.com/api/qt/clist/get?fid=f3&po=1&pz=1&np=1&fltt=2&invt=2"
+                        "&fs=b:%s&fields=f12,f14,f3" % code,
+                        headers={"Referer": "https://quote.eastmoney.com/",
+                                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                               "AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36"},
+                        timeout=10)
+                    return resp.json()
+                except Exception:
+                    return None
+
+            # 补充龙头: 东财 fs=b 成分接口对连续请求限流(rc102), 每轮只慢速补前 3 个,
+            # sector_smart(每2分钟)轮转渐进补齐; 遇限流静默等下一轮
+            import asyncio as _asyncio
+            try:
+                missing = await db.fetch_all(
+                    "SELECT sector_code FROM ("
+                    "  SELECT DISTINCT ON (sector_code) sector_code, main_net_inflow"
+                    "  FROM sector_fund_flow WHERE leader_name IS NULL"
+                    "  ORDER BY sector_code, trade_time DESC) t"
+                    " ORDER BY t.main_net_inflow DESC LIMIT 3")
+            except Exception:
+                missing = []
+            for m in missing:
+                data = await _asyncio.to_thread(_leader, m["sector_code"])
+                diff = ((data or {}).get("data") or {}).get("diff") or []
+                if not diff:
+                    break  # 触发限流(rc102/data null), 本轮停止, 下轮再补
+                await db.execute(
+                    "UPDATE sector_fund_flow SET leader_stock=$1, leader_name=$2 "
+                    "WHERE sector_code=$3 AND leader_name IS NULL",
+                    str(diff[0].get("f12", "")), diff[0].get("f14", ""), m["sector_code"])
+                await _asyncio.sleep(1.5)
         except Exception as e:
             fail = 1
             logger.exception("[%s] 异常: %s", self.name, e)
@@ -114,10 +152,11 @@ class EastMoneySector(BaseCrawler):
         return {
             "sector_code":     str(item.get("f12", "")),
             "sector_name":     item.get("f14", ""),
+            "sector_type":     stype,
             "trade_date":      date.today(),
-            "trade_time":      datetime.now().isoformat(timespec="seconds"),
+            "trade_time":      datetime.now(),
             "change_pct":      self.to_float(item.get("f3")),
-            "main_net_inflow": self.to_float(item.get("f62")) * 10000,
+            "main_net_inflow": self.to_float(item.get("f62")),
             "main_net_ratio":  self.to_float(item.get("f184")),
             "turnover_rate":   self.to_float(item.get("f8")),
             "super_large_net": self.to_float(item.get("f100")) * 10000,
@@ -184,7 +223,7 @@ class EastMoneyRealtime(BaseCrawler):
             return {
                 "stock_code":  code,
                 "trade_date":  date.today(),
-                "trade_time":  datetime.now().isoformat(timespec="seconds"),
+                "trade_time":  datetime.now(),
                 "open":        self.to_float(d.get("f46")) / 100,
                 "high":        self.to_float(d.get("f44")) / 100,
                 "low":         self.to_float(d.get("f45")) / 100,

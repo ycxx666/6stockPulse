@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT))
 
 from core.config import REALTIME
 from infrastructure.database import postgres as db
+from db import database as db_service  # services/* 层使用的连接池 (与 infrastructure 池并存)
 from scheduler import scheduler, register_all
 from application.realtime.service import realtime
 
@@ -42,9 +43,10 @@ async def main():
     logger.info("=" * 50)
     logger.info("6stockPulse Worker 启动中...")
 
-    # 初始化 DB
+    # 初始化 DB（两套池：infrastructure 供 worker/调度，db 供 services/* 层）
     await db.init_pool()
-    logger.info("Database pool ready")
+    await db_service.init_pool()
+    logger.info("Database pools ready")
 
     # 注册并启动调度器
     register_all(scheduler)
@@ -78,6 +80,7 @@ async def main():
     logger.info("Worker shutting down...")
     await realtime.stop()
     scheduler.shutdown()
+    await db_service.close_pool()
     await db.close_pool()
     logger.info("Worker stopped.")
 

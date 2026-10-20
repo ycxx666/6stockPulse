@@ -13,9 +13,10 @@ import json
 import logging
 import math
 import re
+import threading
 import time
 from datetime import datetime
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
@@ -85,7 +86,9 @@ EM_SECTOR_INDUSTRY = (
 # ────────── 数据缓存 ──────────
 _cache: dict = {}
 _cache_ts: dict[str, float] = {}
-_cache_lock = asyncio.Lock()
+# 多线程下用 threading.Lock 保护缓存（asyncio.Lock 会绑定 event loop，
+# 而每个请求都新建 loop，跨 loop 使用会导致卡死/异常）
+_cache_lock = threading.Lock()
 
 CACHE_TTL = {"tickers": 5.0, "anomalies": 8.0, "sector_flow": 120.0}
 
@@ -138,11 +141,11 @@ BASELINE_MIN = 0.1  # 最小基线值，避免除以接近 0
 
 
 async def cached(key: str, ttl: float, fetcher):
-    """带 TTL 的异步缓存"""
+    """带 TTL 的异步缓存（threading.Lock 保护，可安全跨 event loop 使用）"""
     now = time.monotonic()
     if key in _cache and (now - _cache_ts.get(key, 0)) < ttl:
         return _cache[key]
-    async with _cache_lock:
+    with _cache_lock:
         now2 = time.monotonic()
         if key in _cache and (now2 - _cache_ts.get(key, 0)) < ttl:
             return _cache[key]
@@ -966,7 +969,8 @@ def main():
         logger.info("板块资金流向缓存已预热 (%d 条)", len(_cache.get("sector_flow", [])))
     except Exception:
         logger.warning("板块预热失败，首次请求时将重试")
-    server = HTTPServer(("0.0.0.0", port), StandaloneHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", port), StandaloneHandler)
+    server.daemon_threads = True
     logger.info("=" * 50)
     logger.info("6stockPulse 独立服务器已启动")
     logger.info("访问: http://localhost:%d", port)

@@ -1,0 +1,352 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "StockPulse 量化研判工具集",
+    "description": "面向校级智能体平台的 6 个量化研判工具：市场情绪、市场宽度、机会/风险信号、次日方向研判、板块资金流、个股概览。所有工具只读、返回可解释的结构化数据（结论 + 依据 + 快照时间）。导入后请把 servers.url 改成 6stockPulse 实际可访问地址。",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://219.224.5.250:8900",
+      "description": "6stockPulse 服务器（域名 lab.uibe.edu.cn，IP 219.224.5.250）8900 端口"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "如服务器启用了 API_TOKEN，请在 Header 填 Authorization: Bearer <token>；未启用可留空。"
+      }
+    }
+  },
+  "paths": {
+    "/plugin/sentiment": {
+      "get": {
+        "operationId": "get_market_sentiment",
+        "summary": "获取市场情绪",
+        "description": "获取 A 股与全球市场情绪分（0-100）及多因子贡献。",
+        "responses": {
+          "200": {
+            "description": "情绪快照",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean", "description": "是否成功" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "ashare": {
+                          "type": "object",
+                          "description": "A股情绪",
+                          "properties": {
+                            "scope": { "type": "string" },
+                            "score": { "type": "integer", "description": "情绪分 0-100" },
+                            "label": { "type": "string", "description": "情绪标签" },
+                            "factors": { "type": "object", "description": "因子贡献" }
+                          }
+                        },
+                        "global": {
+                          "type": "object",
+                          "description": "全球情绪",
+                          "properties": {
+                            "scope": { "type": "string" },
+                            "score": { "type": "integer", "description": "情绪分 0-100" },
+                            "label": { "type": "string", "description": "情绪标签" },
+                            "factors": { "type": "object", "description": "因子贡献" }
+                          }
+                        }
+                      }
+                    },
+                    "meta": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/breadth": {
+      "get": {
+        "operationId": "get_market_breadth",
+        "summary": "获取市场宽度",
+        "description": "获取市场宽度：上涨/下跌家数、涨停/跌停家数、连板梯队与赚钱效应。",
+        "responses": {
+          "200": {
+            "description": "市场宽度",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "breadth": {
+                          "type": "object",
+                          "properties": {
+                            "up_count": { "type": "integer", "description": "上涨家数" },
+                            "down_count": { "type": "integer", "description": "下跌家数" },
+                            "flat_count": { "type": "integer", "description": "平盘家数" },
+                            "limit_up": { "type": "integer", "description": "涨停家数" },
+                            "limit_down": { "type": "integer", "description": "跌停家数" },
+                            "big_up": { "type": "integer", "description": "大涨家数" },
+                            "big_down": { "type": "integer", "description": "大跌家数" },
+                            "total": { "type": "integer", "description": "总家数" },
+                            "sentiment_score": { "type": "integer", "description": "情绪分" }
+                          }
+                        },
+                        "limit_up_ladder": {
+                          "type": "array",
+                          "description": "连板梯队",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "label": { "type": "string" },
+                              "count": { "type": "integer" },
+                              "bar_pct": { "type": "number" }
+                            }
+                          }
+                        },
+                        "profit_effect": {
+                          "type": "object",
+                          "description": "赚钱效应",
+                          "properties": {
+                            "sample_count": { "type": "integer" },
+                            "sample": { "type": "integer" },
+                            "avg_open_return": { "type": "number" },
+                            "avg_high_return": { "type": "number" },
+                            "avg_close_return": { "type": "number" },
+                            "seal_rate": { "type": "number" },
+                            "break_rate": { "type": "number" }
+                          }
+                        }
+                      }
+                    },
+                    "meta": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/signals": {
+      "get": {
+        "operationId": "get_market_signals",
+        "summary": "获取机会/风险信号",
+        "description": "获取结构化机会(opportunity)与风险(risk)信号，每条含标题、摘要、证据链、置信度、严重级别。无需任何参数，直接调用。",
+        "responses": {
+          "200": {
+            "description": "信号列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "description": "信号列表",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "signal_type": { "type": "string", "description": "opportunity/risk" },
+                          "title": { "type": "string", "description": "信号标题" },
+                          "summary": { "type": "string", "description": "摘要" },
+                          "evidence": { "type": "array", "items": { "type": "string" }, "description": "证据链" },
+                          "direction": { "type": "string" },
+                          "confidence": { "type": "number", "description": "置信度" },
+                          "severity": { "type": "string", "description": "info/warning/critical" },
+                          "generated_at": { "type": "string", "description": "生成时间" }
+                        }
+                      }
+                    },
+                    "meta": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/prediction": {
+      "get": {
+        "operationId": "get_next_session_prediction",
+        "summary": "获取次日方向研判",
+        "description": "获取次日大盘涨/平/跌概率与置信度（规则基线），附各因子解释。",
+        "responses": {
+          "200": {
+            "description": "次日预测",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "horizon": { "type": "string", "description": "预测周期" },
+                        "up_probability": { "type": "number", "description": "上行概率" },
+                        "flat_probability": { "type": "number", "description": "平盘概率" },
+                        "down_probability": { "type": "number", "description": "下行概率" },
+                        "confidence": { "type": "number", "description": "置信度" },
+                        "model_version": { "type": "string" },
+                        "explanation": { "type": "array", "items": { "type": "string" }, "description": "因子解释" },
+                        "note": { "type": "string", "description": "备注" }
+                      }
+                    },
+                    "meta": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/sector-flow": {
+      "get": {
+        "operationId": "get_sector_flow",
+        "summary": "获取板块资金流",
+        "description": "获取概念/行业板块资金流向与领涨板块，返回板块名、涨跌幅、资金净流入等。",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["concept", "industry"], "example": "concept" },
+            "description": "只填 concept（概念板块）或 industry（行业板块）这一个字符串。"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 10 },
+            "description": "返回条数"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "板块资金流列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "description": "板块资金流列表",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sector_code": { "type": "string" },
+                          "sector_name": { "type": "string", "description": "板块名称" },
+                          "sector_type": { "type": "string", "description": "concept/industry" },
+                          "change_pct": { "type": "number", "description": "涨跌幅" },
+                          "main_net_inflow": { "type": "number", "description": "主力净流入" },
+                          "main_net_ratio": { "type": "number", "description": "主力净流入占比" },
+                          "turnover_rate": { "type": "number", "description": "换手率" }
+                        }
+                      }
+                    },
+                    "meta": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/stock": {
+      "get": {
+        "operationId": "get_stock_overview",
+        "summary": "获取个股概览",
+        "description": "获取单只股票的实时行情、分时/日K概览与所属板块，入参为股票代码（如 600519）或名称（如 贵州茅台）。",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "example": "600519" },
+            "description": "单只股票的代码或名称，必须是普通字符串，例如 600519 或 贵州茅台。禁止传数组或对象。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "个股概览",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "stock": {
+                          "type": "object",
+                          "description": "股票基础信息",
+                          "properties": {
+                            "stock_code": { "type": "string", "description": "股票代码" },
+                            "stock_name": { "type": "string", "description": "股票名称" },
+                            "market": { "type": "string", "description": "SH/SZ/BJ" },
+                            "industry": { "type": "string", "description": "所属行业" },
+                            "sector_code": { "type": "string" },
+                            "list_date": { "type": "string" },
+                            "total_shares": { "type": "integer" },
+                            "circ_shares": { "type": "integer" },
+                            "is_active": { "type": "boolean" },
+                            "extra": { "type": "string" },
+                            "created_at": { "type": "string" },
+                            "updated_at": { "type": "string" }
+                          }
+                        },
+                        "quote": {
+                          "type": "object",
+                          "description": "最新行情（可能为空）",
+                          "properties": {
+                            "close": { "type": "number" },
+                            "change_pct": { "type": "number" },
+                            "turnover_rate": { "type": "number" },
+                            "amount": { "type": "number" }
+                          }
+                        },
+                        "recent_kline": {
+                          "type": "array",
+                          "description": "最近日K",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "trade_date": { "type": "string" },
+                              "open": { "type": "number" },
+                              "high": { "type": "number" },
+                              "low": { "type": "number" },
+                              "close": { "type": "number" },
+                              "volume": { "type": "number" },
+                              "amount": { "type": "number" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

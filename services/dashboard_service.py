@@ -12,7 +12,7 @@ from datetime import datetime
 
 from db import database as db
 from services.cache import cache, CacheKeys
-from api.realtime import realtime, in_trading_hours
+from application.realtime.service import realtime, in_trading_hours
 from scheduler.task_registry import get_market_session, MarketSession
 
 logger = logging.getLogger(__name__)

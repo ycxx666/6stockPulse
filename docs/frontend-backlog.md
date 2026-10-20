@@ -115,6 +115,41 @@
 
 ---
 
+## P6 · 前端面板数据不显示:契约不一致 / 回退映射 / 兜底伪装
+
+**状态: open · 立项 2026-09-11 · 范围 = 前端+后端契约修复 + 诚实空态(用户已选 A)**
+
+### 现象
+多个面板「取到数据却不渲染」或「把默认值当真实分析结果」:
+- 板块资金流向**条形恒等宽**、龙头恒显示「龙头待补」;
+- 赚钱效应**炸板率/封板率恒为 0%**;
+- 快照接口不可用时,异动/概念列表**空白或出现 `undefined`**;
+- 无真实情绪/预测快照时,A股情绪圆环**固定 50**、预测**固定「明日:震荡」**,掩盖「无真实分析结果」。
+
+### 根因(含定位)
+1. **字段契约不一致(后端有数据、前端读不到)**
+   - `app/api/routes/market.py:221` `GET /api/sectors/flow` 只返回 `sector_code/sector_name/sector_type/change_pct/main_net_inflow/main_net_ratio/turnover_rate`,**缺 `bar_pct`、缺 `leader_name`**;前端 `frontend/index.html:395` 读 `s.bar_pct||50` 与 `s.leader_name` → 条形全 `50%`、龙头恒「龙头待补」。
+   - 讽刺点:`application/dashboard/aggregator.py:192` `_get_sector_flow()` **已算好 `bar_pct`**,但前端未用 snapshot 的 `sector_flow`,反而单独请求了缺字段的 `/api/sectors/flow`。
+   - 赚钱效应:前端 `frontend/index.html:612` 读 `h.break_rate/seal_rate/avg_close_return`,`application/market/analyzer.py` 的 `get_enhanced_profit_effect()` 默认分支缺 `break_rate/seal_rate` → 恒 0%。
+2. **回退分支字段未归一**
+   - `frontend/index.html:882/885` `loadPerEndpoint()` 在 snapshot 不可用时把原始 dict 直接喂给 `renderAnomalies`(期望 `{name,value,dir,time,sub}`)与 `renderConcepts`(期望 `[name,change,meta]`)→ 列表空白 / `undefined`。
+3. **默认兜底伪装真实分析结果**
+   - `application/dashboard/aggregator.py:297-321` `_default_sentiment()` = `score:50/label:中性`、`_default_prediction()` = `0.33/0.34/0.33`;无 `sentiment_snapshot`/`prediction_result` 时前端照常画出 50 / 「明日:震荡」。
+4. **数据管道缺数(非契约问题)**
+   - 异动 / 信号 / 连板 / 赚钱效应 / 板块 leader 依赖 worker 24h 运行 + 交易时段 + 历史数据;worker 停摆或盘外即空态(见本文件 P5 与「已知数据源限制」)。
+
+### 整改动作(方案 A + 诚实空态)
+1. 后端补字段:`/api/sectors/flow` 增 `bar_pct`(按 `max|main_net_inflow|` 归一)与 `leader_name/leader_change_pct`;对齐 `get_enhanced_profit_effect` 的 `break_rate/seal_rate/avg_close_return`;核对 `volume-comparison`、`concepts/leaders` 字段名与前端一致。
+2. 前端抽公共归一函数(raw dict → 归一数组),snapshot 路径与 `loadPerEndpoint` 回退路径共用;`loadSectors` 复用 snapshot 的 `sector_flow`(含 `bar_pct`)或改用修好的字段;`/api/hotspots` 的 `stocks` 做字符串/数组兼容,避免 `.map` 抛错导致整块「热点服务暂不可用」。
+3. 诚实空态:后端缺真实数据时附 `is_fallback` / `data_quality` 标记,前端据此显示「暂无真实分析结果」,不再显示 50 / 明日震荡(覆盖 A股/全球情绪、领先预测、stats);空态文案分级(采集中 / 需盘中数据 / 数据源受限)。
+
+### 验收
+- `/api/sectors/flow` 返回含 `bar_pct`(非恒 50)且龙头字段就位;赚钱效应炸板率/封板率非恒 0。
+- 无 worker 态:情绪/预测面板显示「暂无真实分析结果」而非 50 / 明日震荡;有数据态:各面板正常显示。
+- 前端控制台无报错、无 `undefined`、无等宽条;`curl` 断言关键字段存在。
+
+---
+
 ## 已知数据源限制(备忘,非 bug)
 
 | 数据源 | 限制 | 处理 |

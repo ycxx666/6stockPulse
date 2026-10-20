@@ -92,6 +92,31 @@ function tickClock() {
   const t = new Date().toLocaleTimeString('zh-CN', { hour12: false });
   const c = document.getElementById('clock'); if (c) c.textContent = t;
   const m = document.getElementById('marketTime'); if (m) m.textContent = t;
+  refreshFreshness();
+}
+
+// 数据新鲜度: 每 30s 拉取 /api/system/freshness, 写入 #freshTag(缺失则跳过)
+// 全部新鲜 → “数据 HH:MM”；存在陈旧源 → 红字“数据陈旧 · 最新 HH:MM”
+let _freshnessAt = 0;
+async function refreshFreshness() {
+  const el = document.getElementById('freshTag');
+  if (!el) return;
+  if (Date.now() - _freshnessAt < 30000) return;
+  _freshnessAt = Date.now();
+  try {
+    const f = await fetchJson('/api/system/freshness');
+    const srcs = (f && f.sources) || [];
+    const times = srcs.map(s => s.last_time).filter(Boolean).sort();
+    const newest = times.length ? String(times[times.length - 1]) : '';
+    const hhmm = newest ? newest.slice(11, 16) : '--';
+    if (f && f.any_stale) {
+      el.className = 'pill red-text';
+      setTextIfChanged(el, `⚠ 数据陈旧 · 最新 ${hhmm}`);
+    } else {
+      el.className = 'pill';
+      setTextIfChanged(el, `数据 ${hhmm}`);
+    }
+  } catch (e) { /* 忽略: 接口不可用时保持原样 */ }
 }
 
 // WebSocket 实时通道:连接 /ws/realtime,按主题分派,断开自动重连(5s)

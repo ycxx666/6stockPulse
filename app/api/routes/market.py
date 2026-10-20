@@ -63,10 +63,11 @@ async def _fetch_ashare_indices() -> list[dict]:
                     continue
                 symbol, name, market, asset_type = _SINA_INDEX_CODES[sina_code]
                 try:
-                    prev_close = float(parts[2]) if parts[2] else 0
-                    price = float(parts[3]) if parts[3] else 0
-                    change = price - prev_close
-                    change_pct = (change / prev_close * 100) if prev_close else 0
+                    # 新浪 A股指数格式: parts[1]=现价点位, parts[2]=涨跌额, parts[3]=涨跌幅%
+                    price = float(parts[1]) if parts[1] else 0
+                    chg = float(parts[2]) if parts[2] else 0
+                    prev_close = round(price - chg, 4)
+                    change_pct = float(parts[3]) if len(parts) > 3 and parts[3] else 0
                     results.append({
                         "symbol": symbol,
                         "name": name,
@@ -74,7 +75,7 @@ async def _fetch_ashare_indices() -> list[dict]:
                         "market": market,
                         "price": round(price, 2),
                         "prev_close": prev_close,
-                        "change": round(change, 2),
+                        "change": round(chg, 2),
                         "change_pct": round(change_pct, 2),
                         "quote_time": None,
                         "source": "sina",
@@ -224,9 +225,9 @@ async def sector_flow(type: str = "concept", limit: int = 10):
         SELECT s.sector_code, s.sector_name, s.sector_type,
                s.change_pct, s.main_net_inflow, s.main_net_ratio, s.turnover_rate
         FROM v_sector_top s
-        WHERE s.rnk <= $1
+        WHERE s.rnk <= $1 AND s.sector_type = $2
         ORDER BY s.rnk
-    """, limit)
+    """, limit, type)
     return APIResponse.success(_jsonable(rows))
 
 

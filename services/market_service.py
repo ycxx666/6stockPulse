@@ -47,7 +47,7 @@ async def compute_and_store_breadth() -> dict:
              big_up, big_down, total, sentiment_score, source)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'computed')
         ON CONFLICT (snapshot_time) DO NOTHING
-    """, now.isoformat(), r["up_count"], r["down_count"], r["flat_count"],
+    """, now, r["up_count"], r["down_count"], r["flat_count"],
        r["limit_up"], r["limit_down"], r["big_up"], r["big_down"],
        r["total"], r["sentiment_score"])
 
@@ -88,13 +88,13 @@ async def get_volume_comparison() -> dict:
              WHERE trade_date = $1) AS today_volume,
             (SELECT COALESCE(SUM(volume), 0) FROM stock_prices
              WHERE trade_date = $1 - INTERVAL '1 day') AS yesterday_volume
-    """, today.isoformat())
+    """, today)
     if not row:
         return {"today_amount_yi": 0, "yesterday_amount_yi": 0,
                 "ratio": 1.0, "trend": "持平"}
     r = dict(row)
-    today_amt = (r.get("today_amount") or 0) / 1e8
-    yesterday_amt = (r.get("yesterday_amount") or 0) / 1e8
+    today_amt = float(r.get("today_amount") or 0) / 1e8
+    yesterday_amt = float(r.get("yesterday_amount") or 0) / 1e8
     ratio = today_amt / max(yesterday_amt, 1)
     trend = "放量" if ratio > 1.2 else "缩量" if ratio < 0.8 else "持平"
     return {
@@ -190,7 +190,7 @@ async def get_index_intraday(symbol: str = "000001", date_str: str | None = None
     symbol: 000001=上证, 399001=深证, 399006=创业板
     """
     from datetime import date
-    trade_date = date_str or date.today().isoformat()
+    trade_date = date.fromisoformat(date_str) if date_str else date.today()
     rows = await db.fetch_all("""
         SELECT trade_time::text AS t, open, high, low, close, volume, amount
         FROM stock_prices
@@ -217,14 +217,14 @@ async def get_minute_volume_comparison() -> dict:
         FROM stock_prices
         WHERE stock_code = '000001' AND trade_date = $1
         ORDER BY trade_time ASC
-    """, today.isoformat())
+    """, today)
 
     yesterday_rows = await db.fetch_all("""
         SELECT trade_time::text AS t, close, volume
         FROM stock_prices
         WHERE stock_code = '000001' AND trade_date = $1
         ORDER BY trade_time ASC
-    """, yesterday.isoformat())
+    """, yesterday)
 
     return {
         "today": [dict(r) for r in today_rows],
@@ -238,7 +238,7 @@ async def _get_daily_amount(d: date) -> float:
     row = await db.fetch_one("""
         SELECT COALESCE(SUM(amount), 0) AS total
         FROM stock_prices WHERE trade_date = $1
-    """, d.isoformat())
+    """, d)
     return float(row["total"]) if row else 0.0
 
 
@@ -293,11 +293,12 @@ async def get_enhanced_profit_effect() -> dict:
     # 昨日涨停股今日表现
     row = await db.fetch_one("""
         WITH y_limit AS (
-            SELECT stock_code FROM stock_prices
+            SELECT stock_code, close FROM stock_prices
             WHERE trade_date = $1 AND change_pct >= 9.95
         ),
         today_perf AS (
             SELECT p.stock_code,
+                   y.close AS prev_close,
                    FIRST_VALUE(p.open)  OVER w AS open_p,
                    MAX(p.high)          OVER w AS high_p,
                    LAST_VALUE(p.close)  OVER w AS close_p
@@ -308,11 +309,11 @@ async def get_enhanced_profit_effect() -> dict:
         )
         SELECT
             COUNT(DISTINCT stock_code) AS sample,
-            ROUND(AVG((open_p - close)/close*100)::numeric, 2) AS avg_open_return,
-            ROUND(AVG((high_p - close)/close*100)::numeric, 2) AS avg_high_return,
-            ROUND(AVG((close_p - close)/close*100)::numeric, 2) AS avg_close_return
+            ROUND(AVG((open_p - prev_close)/prev_close*100)::numeric, 2) AS avg_open_return,
+            ROUND(AVG((high_p - prev_close)/prev_close*100)::numeric, 2) AS avg_high_return,
+            ROUND(AVG((close_p - prev_close)/prev_close*100)::numeric, 2) AS avg_close_return
         FROM today_perf
-    """, yesterday.isoformat(), today.isoformat())
+    """, yesterday, today)
 
     if not row or not row.get("sample"):
         return {"sample_count": 0, "avg_open_return": 0, "avg_high_return": 0,

@@ -14,6 +14,7 @@
 from __future__ import annotations
 import asyncio
 import logging
+import os
 from datetime import datetime
 from typing import Callable, Any
 
@@ -145,8 +146,8 @@ async def job_prune_old_prices():
 
 async def job_market_breadth():
     """市场宽度计算 (每分钟)"""
-    from domain.market import compute_and_store_breadth
-    from domain.dashboard import invalidate_snapshot
+    from services.market_service import compute_and_store_breadth
+    from services.dashboard_service import invalidate_snapshot
     try:
         breadth = await compute_and_store_breadth()
         invalidate_snapshot()
@@ -188,7 +189,7 @@ async def job_anomaly_detect():
 
 async def job_sentiment_snapshot():
     """情绪快照计算 (每 1 分钟)"""
-    from domain.sentiment import compute_all
+    from services.sentiment_service import compute_all
     try:
         await compute_all()
     except Exception as e:
@@ -198,7 +199,7 @@ async def job_sentiment_snapshot():
 async def job_minute_aggregation():
     """分钟聚合: 指数分时 + 量能对比 (每分钟, 仅交易时段)"""
     try:
-        from domain.market import compute_and_store_breadth
+        from services.market_service import compute_and_store_breadth
         await compute_and_store_breadth()
     except Exception as e:
         logger.error("minute_aggregation failed: %s", e)
@@ -206,7 +207,7 @@ async def job_minute_aggregation():
 
 async def job_nlp_process_news():
     """NLP 新闻处理 (每 2 分钟)"""
-    from domain.news import process_news_batch
+    from services.news_service import process_news_batch
     try:
         r = await process_news_batch(limit=50)
         if r.get("processed", 0) > 0:
@@ -217,7 +218,7 @@ async def job_nlp_process_news():
 
 async def job_generate_signals():
     """信号编排 (每 5 分钟)"""
-    from domain.signal import generate_signals
+    from services.signal_service import generate_signals
     try:
         signals = await generate_signals()
         logger.info("generate_signals: %d signals", len(signals))
@@ -227,7 +228,7 @@ async def job_generate_signals():
 
 async def job_predict_next_session():
     """次日预测 (午盘/收盘)"""
-    from domain.prediction import predict_next_session
+    from services.prediction_service import predict_next_session
     try:
         r = await predict_next_session()
         logger.info("prediction: up=%.1f%% down=%.1f%% confidence=%.1f%%",
@@ -407,11 +408,167 @@ def register_all(svc: SchedulerService):
     svc.add_cron(job_prune_old_news, hour=2, minute=0, id="prune_news")
     svc.add_cron(job_prune_old_prices, hour=2, minute=30, id="prune_prices")
 
+    # 每日异动(自动): 收盘后基于当日分钟K线生成"今日涨停/大跌"异动, 时间精确到触发时刻
+    svc.add_cron(job_anomaly_today, hour=15, minute=5, id="anomaly_today")
+    svc.add_cron(job_anomaly_today, hour=11, minute=35, id="anomaly_today_noon")
+
+    # 新闻多源(sqlite 网关) → PG 自动同步 (每 30 分钟, 幂等)
+    svc.add_interval(job_news_import, seconds=1800, id="news_import")
+
+    # 东财可达性探测 + 自动补采 (每 10 分钟)
+    svc.add_interval(job_em_probe, seconds=600, id="em_probe")
+
     # ── Yahoo Finance 全球行情 ──
-    svc.add_interval(job_yahoo_tier1, seconds=15, id="yahoo_tier1")
-    svc.add_interval(job_yahoo_tier2, seconds=60, id="yahoo_tier2")
+    # 大陆网络直连 Yahoo 恒 403，默认禁用避免无效重试刷爆日志；有代理时设 YAHOO_ENABLED=1 恢复
+    if os.environ.get("YAHOO_ENABLED"):
+        svc.add_interval(job_yahoo_tier1, seconds=15, id="yahoo_tier1")
+        svc.add_interval(job_yahoo_tier2, seconds=60, id="yahoo_tier2")
+        logger.info("Yahoo jobs enabled (YAHOO_ENABLED=1)")
 
     logger.info("All scheduled jobs registered (v5: +yahoo_tier1/tier2)")
+
+
+async def job_anomaly_today():
+    """每日异动(自动): 基于当日分钟K线检测涨停/大跌, 时间精确到首次触发时刻。
+
+    与实时 detect_anomalies 互补——此任务盘后也能基于当日分钟数据生成完整"今日异动"。
+    数据源: 新浪日线(昨收) + 5分钟K线(当日触发时刻)。
+    """
+    from datetime import date as _date, datetime as _dt
+    import aiohttp, json, re
+    today = _date.today().isoformat()
+    try:
+        rows = await db.fetch_all("""SELECT s.stock_code, st.stock_name, s.change_pct
+            FROM stock_prices s JOIN stocks st ON st.stock_code = s.stock_code
+            WHERE s.trade_date = $1 AND abs(s.change_pct) >= 9.9""", _date.today())
+    except Exception as e:
+        logger.error("anomaly_today query failed: %s", e)
+        return
+    if not rows:
+        logger.info("anomaly_today: 今日无异动股")
+        return
+    # 只保留今日异动(历史日线回填的旧异动清空)
+    await db.execute("DELETE FROM anomaly_event")
+
+    def _sym(c): return ("sh" if c[:1] in ("6", "9") else "sz") + c
+    KLINE = ("https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20_=/"
+             "CN_MarketDataService.getKLineData?symbol={sym}&scale=240&ma=no&datalen=3")
+    MIN5 = ("https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20_=/"
+            "CN_MarketDataService.getKLineData?symbol={sym}&scale=5&ma=no&datalen=280")
+    HK = {"Referer": "https://finance.sina.com.cn/", "User-Agent": "Mozilla/5.0"}
+
+    async def ft(sess, url):
+        async with sess.get(url, headers=HK, timeout=aiohttp.ClientTimeout(total=18)) as resp:
+            return await resp.text()
+
+    async with aiohttp.ClientSession() as sess:
+        for r in rows:
+            code = r["stock_code"]; name = r["stock_name"]; pct = float(r["change_pct"])
+            k = _sym(code)
+            prev = None
+            try:
+                arr = json.loads(re.search(r'\[.*\]', await ft(sess, KLINE.format(sym=k)), re.S).group(0))
+                for it in arr:
+                    if (it["day"] or "")[:10] < today:
+                        prev = float(it["close"])
+            except Exception:
+                pass
+            dt = _dt.combine(_date.today(), _dt.min.time())
+            try:
+                arr = json.loads(re.search(r'\[.*\]', await ft(sess, MIN5.format(sym=k)), re.S).group(0))
+                for it in arr:
+                    if (it["day"] or "")[:10] != today:
+                        continue
+                    c = float(it["close"])
+                    if prev and abs((c - prev) / prev * 100) >= 9.9:
+                        dt = _dt.strptime(it["day"], "%Y-%m-%d %H:%M:%S")
+                        break
+            except Exception:
+                pass
+            try:
+                await db.execute("INSERT INTO anomaly_event(symbol,stock_name,event_type,direction,window_seconds,change_pct,detected_at,status) "
+                                 "VALUES($1,$2,$3,$4,$5,$6,$7,'active')",
+                                 code, name, "surge" if pct > 0 else "drop",
+                                 "up" if pct > 0 else "down", 300, round(pct, 2), dt)
+            except Exception:
+                logger.debug("anomaly_event insert %s failed", code, exc_info=True)
+            await asyncio.sleep(0.3)
+    logger.info("anomaly_today: %d 条今日异动", len(rows))
+
+
+async def job_news_import():
+    """把新闻网关(sqlite)的今日多源新闻同步到 PG news(幂等,ON CONFLICT DO NOTHING)。
+
+    与异动类似,每日自动跑;news_gateway 的多源采集写 sqlite,此任务同步进 PG 供页面展示。
+    """
+    import sqlite3, json
+    from datetime import datetime as _dt2
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent
+    today = _dt2.now().strftime("%Y-%m-%d")
+
+    def _dt(s):
+        try: return _dt2.fromisoformat(str(s)[:19]) if s else None
+        except Exception: return None
+    def _arr(s):
+        try:
+            v = json.loads(s) if s else []
+            return v if isinstance(v, list) else []
+        except Exception: return []
+
+    try:
+        conn = sqlite3.connect(str(root / "data" / "news.db"))
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("SELECT * FROM news WHERE publish_time LIKE ? || '%'", (today,)).fetchall()
+        conn.close()
+    except Exception as e:
+        logger.warning("news_import: sqlite 读取失败: %s", e)
+        return
+    n = 0
+    for r in rows:
+        try:
+            dt = _dt(r["publish_time"]) or _dt2.now()
+            dtc = _dt(r["crawl_time"]) or dt
+            await db.execute("""INSERT INTO news(news_id,title,content,summary,publish_time,source,source_url,category,stocks,keywords,sentiment,importance,crawl_time,is_processed)
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                ON CONFLICT (news_id) DO NOTHING""",
+                r["news_id"], r["title"], r["content"] or "", r["summary"] or "",
+                dt, r["source"] or "", r["source_url"] or "", r["category"] or "",
+                _arr(r["stocks"]), _arr(r["keywords"]),
+                r["sentiment"], int(r["importance"] or 0), dtc, bool(r["is_processed"]))
+            n += 1
+        except Exception:
+            pass
+    logger.info("news_import: %d 条今日多源新闻入库", n)
+
+
+async def job_em_probe():
+    """东财可达性探测 + 自动补采: 周期探测 push2delay 板块通道。
+
+    - 通道不可达 → 日志警告,维持现状(sector_smart 会继续尝试)
+    - 通道可用且当日无板块数据 → 自动触发板块全量采集,并刷新 latest_sector 视图
+    """
+    import requests as _rq
+    try:
+        r = _rq.get(
+            "https://push2delay.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz=1&pn=1&np=1&fltt=2&invt=2"
+            "&fs=m:90+t:3&fields=f12,f14,f62",
+            headers={"Referer": "https://quote.eastmoney.com/", "User-Agent": "Mozilla/5.0"}, timeout=8)
+        ok = r.status_code == 200 and ((r.json() or {}).get("rc") == 0)
+    except Exception:
+        ok = False
+    if not ok:
+        logger.warning("em_probe: 东财通道暂不可达(维持现状)")
+        return
+    from datetime import date as _date
+    cnt = await db.fetch_val("SELECT count(*) FROM sector_fund_flow WHERE trade_date = $1", _date.today())
+    if (cnt or 0) == 0:
+        from infrastructure.crawler.eastmoney import EastMoneySector
+        async with EastMoneySector() as c:
+            r2 = await c.run(pages=2)
+        logger.info("em_probe: 东财通道可用且当日板块为空, 已自动补采 %s", r2)
+    await db.execute("REFRESH MATERIALIZED VIEW latest_sector")
+    logger.info("em_probe: 东财通道可用, latest_sector 已刷新")
 
 
 # 全局单例

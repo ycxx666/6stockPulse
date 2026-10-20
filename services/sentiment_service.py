@@ -40,7 +40,7 @@ async def compute_ashare_sentiment() -> dict:
     up = breadth.get("up_count", 0)
     down = breadth.get("down_count", 0)
     total = max(breadth.get("total", 1), 1)
-    up_ratio = up / total
+    up_ratio = float(up) / float(total)
     breadth_score = max(0, min(100, int(up_ratio * 100)))
     factors["市场宽度"] = _factor(up_ratio, breadth_score, 15)
 
@@ -48,7 +48,7 @@ async def compute_ashare_sentiment() -> dict:
     limit_up = breadth.get("limit_up", 0)
     limit_down = breadth.get("limit_down", 0)
     # 涨停数/总股票数 映射到 0-100
-    limit_up_ratio = limit_up / max(total, 1)
+    limit_up_ratio = float(limit_up) / max(float(total), 1)
     limit_score = max(0, min(100, int(limit_up_ratio * 500)))  # 100/5000=2% → 10分
     factors["涨跌停强度"] = _factor(limit_up, limit_score, 15)
 
@@ -215,7 +215,7 @@ async def _calc_sector_spread() -> int:
     """)
     if not row or not row.get("total"):
         return 50
-    return max(0, min(100, int(row["up_count"] / row["total"] * 100)))
+    return max(0, min(100, int(float(row["up_count"]) / float(row["total"]) * 100)))
 
 
 async def _calc_fund_score() -> int:
@@ -226,7 +226,7 @@ async def _calc_fund_score() -> int:
     """)
     if not row:
         return 50
-    inflow = (row.get("total_inflow") or 0) / 1e8  # 亿元
+    inflow = float(row.get("total_inflow") or 0) / 1e8  # 亿元
     if inflow > 100: return 85
     if inflow > 30:  return 70
     if inflow > 0:   return 55

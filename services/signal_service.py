@@ -173,7 +173,7 @@ async def _detect_positive_news_signal(now: datetime) -> list[dict]:
             "summary": r['title'][:150],
             "evidence": [
                 {"type": "news", "value": f"sentiment={r.get('sentiment',0):.2f}, importance={r.get('importance',0)}"},
-                {"type": "stocks", "value": stocks[:5]},
+                {"type": "stocks", "value": ", ".join(str(s) for s in stocks[:5]) if stocks else "无关联个股"},
             ],
             "direction": "bullish",
             "confidence": 0.6,

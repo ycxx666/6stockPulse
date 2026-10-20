@@ -93,7 +93,7 @@ class EastMoneyURLs:
     """东方财富接口"""
     # A 股资金流向 (按主力净流入排序)
     FUND_FLOW_LIST = (
-        "https://push2.eastmoney.com/api/qt/clist/get?"
+        "https://push2delay.eastmoney.com/api/qt/clist/get?"
         "fid=f62&po=1&pz={pz}&pn={pn}&np=1&fltt=2&invt=2"
         "&ut=b2884a393a59ad64002292a3e90d46a5"
         "&fields=f12,f14,f2,f3,f5,f6,f8,f9,f10,f62,f184,f66,f69,f72,f75,f78,f81,f84,f87"
@@ -114,13 +114,13 @@ class EastMoneyURLs:
     )
     # 板块 (行业)
     SECTOR_INDUSTRY = (
-        "https://push2.eastmoney.com/api/qt/clist/get?"
+        "https://push2delay.eastmoney.com/api/qt/clist/get?"
         "fid=f3&po=1&pz=50&pn={pn}&np=1&fltt=2&invt=2"
         "&fs=m:90+t:2&fields=f12,f14,f3,f62,f184,f8,f100,f102"
     )
     # 板块 (概念)
     SECTOR_CONCEPT = (
-        "https://push2.eastmoney.com/api/qt/clist/get?"
+        "https://push2delay.eastmoney.com/api/qt/clist/get?"
         "fid=f3&po=1&pz=50&pn={pn}&np=1&fltt=2&invt=2"
         "&fs=m:90+t:3&fields=f12,f14,f3,f62,f184,f8,f100,f102"
     )

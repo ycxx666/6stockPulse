@@ -87,12 +87,13 @@ async def predict_next_session() -> dict:
         explanations.append(f"跌停{limit_down}家 > 涨停{limit_up}家")
 
     # 6. 指数趋势 (简化: 当日涨跌)
-    index_chg = await _get_index_change()
+    index_chg, index_source = await _get_index_change()
     factors["index_change"] = index_chg
+    factors["index_source"] = index_source
     if index_chg > 0.5:
-        explanations.append(f"大盘上涨{index_chg:.2f}%")
+        explanations.append(f"{index_source}上涨{index_chg:.2f}%")
     elif index_chg < -0.5:
-        explanations.append(f"大盘下跌{abs(index_chg):.2f}%")
+        explanations.append(f"{index_source}下跌{abs(index_chg):.2f}%")
 
     # ── 加权计算 ──
     # 所有因子先归一化到 0-1 (高分=偏涨)
@@ -183,11 +184,22 @@ async def _get_breadth() -> dict:
     return dict(row) if row else {"limit_up": 0, "limit_down": 0}
 
 
-async def _get_index_change() -> float:
+async def _get_index_change() -> tuple[float, str]:
+    """返回 (涨跌幅, 口径说明)。优先上证指数，缺失回退全市场平均。"""
     row = await db.fetch_one("""
-        SELECT change_pct FROM latest_quotes WHERE stock_code = '000001' LIMIT 1
+        SELECT change_pct FROM market_quote_snapshot
+        WHERE asset_type = 'index'
+          AND (name LIKE '%上证%' OR symbol LIKE '%SHCOMP%' OR symbol LIKE '000001.SH%')
+        LIMIT 1
     """)
-    return float(row["change_pct"]) if row and row.get("change_pct") else 0.0
+    if row and row.get("change_pct") is not None:
+        return float(row["change_pct"]), "上证指数"
+    row = await db.fetch_one("""
+        SELECT AVG(change_pct) AS avg_chg FROM latest_quotes WHERE change_pct IS NOT NULL
+    """)
+    if row and row.get("avg_chg") is not None:
+        return float(row["avg_chg"]), "全市场平均"
+    return 0.0, "无数据"
 
 
 # ═══════════════════════════════════════════════════════════════
