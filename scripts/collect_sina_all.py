@@ -53,7 +53,7 @@ def fetch_sina(codes: list[str]) -> dict:
             out[key[2:]] = {
                 "name": p[0], "open": float(p[1]), "close": close,
                 "high": float(p[4]), "low": float(p[5]),
-                "volume": int(float(p[8])), "amount": float(p[9]),
+                "volume": int(float(p[8]) / 100), "amount": float(p[9]),  # 新浪成交量单位是股，转手
                 "change_pct": round((close - prev) / prev * 100, 4),
                 "change_amt": round(close - prev, 3),
                 "trade_date": p[30], "trade_time": f"{p[30]} {p[31]}",
@@ -176,7 +176,8 @@ async def collect_indices() -> int:
 
 async def collect_all() -> int:
     rows = await db.fetch_all(
-        "SELECT stock_code, market FROM stocks WHERE is_active = TRUE ORDER BY stock_code")
+        "SELECT stock_code, market, circ_shares FROM stocks WHERE is_active = TRUE ORDER BY stock_code")
+    circ_map = {r["stock_code"]: r["circ_shares"] for r in rows}
     codes = [MARKET_PREFIX.get(r["market"], "sh") + r["stock_code"] for r in rows]
 
     batch_size = 80
@@ -186,6 +187,11 @@ async def collect_all() -> int:
         data = fetch_batch(batch)
         for code, q in data.items():
             try:
+                circ = circ_map.get(code)
+                turnover = None
+                if circ and float(circ) > 0:
+                    # volume 单位手 → 股；换手率 = 成交量(股) / 流通股本 × 100
+                    turnover = round(q["volume"] * 100 / float(circ) * 100, 4)
                 updates.append({
                     "stock_code": code,
                     "trade_date": date.fromisoformat(q["trade_date"]),
@@ -193,16 +199,18 @@ async def collect_all() -> int:
                     "open": q["open"], "high": q["high"], "low": q["low"],
                     "close": q["close"], "volume": q["volume"], "amount": q["amount"],
                     "change_pct": q["change_pct"], "change_amt": q["change_amt"],
+                    "turnover_rate": turnover,
                 })
             except Exception:
                 continue
         await asyncio.sleep(0.25)
 
     if updates:
-        inserted = await db.insert_many(
+        inserted = await db.upsert_many(
             "stock_prices", updates,
-            conflict_target="trade_date, stock_code, trade_time",
-            chunk_size=500,
+            conflict_target=["trade_date", "stock_code", "trade_time"],
+            update_cols=["open", "high", "low", "close", "volume", "amount",
+                         "change_pct", "change_amt", "turnover_rate"],
         )
         print(f"collected {len(updates)} quotes, inserted {inserted}")
         await db.refresh_latest_quotes()
