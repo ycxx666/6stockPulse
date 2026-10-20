@@ -156,7 +156,7 @@ async def _detect_volume_breakout_opportunity(now: datetime) -> list[dict]:
 async def _detect_positive_news_signal(now: datetime) -> list[dict]:
     """正面新闻信号（标题含负面词则跳过，避免利空被误标为利好）"""
     rows = await db.fetch_all("""
-        SELECT title, sentiment, importance, stocks
+        SELECT title, sentiment, importance, stocks, publish_time, source
         FROM news
         WHERE is_processed = TRUE
           AND sentiment > 0.3
@@ -179,6 +179,8 @@ async def _detect_positive_news_signal(now: datetime) -> list[dict]:
             "summary": r['title'][:150],
             "evidence": [
                 {"type": "news", "value": f"sentiment={r.get('sentiment',0):.2f}, importance={r.get('importance',0)}"},
+                {"type": "source", "value": r.get("source") or "未知来源"},
+                {"type": "publish_time", "value": str(r.get("publish_time") or "")},
                 {"type": "stocks", "value": ", ".join(str(s) for s in stocks[:5]) if stocks else "无关联个股"},
             ],
             "direction": "bullish",

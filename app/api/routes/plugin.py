@@ -44,10 +44,13 @@ async def _data_meta() -> dict:
             freshness = max(0, int((datetime.now(timezone.utc) - updated).total_seconds()))
         except Exception:
             freshness = None
+    stock_count = await db.fetch_val("SELECT COUNT(*) FROM stocks WHERE is_active = TRUE")
     return {
         "data_updated_at": updated.isoformat() if hasattr(updated, "isoformat") else updated,
         "is_trading_hours": in_trading_hours(),
         "data_freshness_sec": freshness,
+        "fund_flow_unit": "元",
+        "fund_flow_scope": f"全市场含北交所({stock_count}只)",
         "note": "非交易时段数据源返回固定收盘快照，数值不变化属正常",
     }
 
@@ -145,7 +148,7 @@ async def plugin_prediction():
     """次日大盘涨/平/跌概率与置信度（规则基线），附因子解释。"""
     row = await db.fetch_one("""
         SELECT horizon, up_probability, flat_probability, down_probability,
-               confidence, explanation, model_version,
+               confidence, explanation, model_version, feature_snapshot,
                predicted_at::text AS generated_at
         FROM prediction_result ORDER BY predicted_at DESC LIMIT 1
     """)
@@ -157,6 +160,14 @@ async def plugin_prediction():
             "note": "暂无预测结果",
         }, **(await _data_meta()))
     data = _row(row)
+    fs = data.pop("feature_snapshot", None) or {}
+    if isinstance(fs, str):
+        try:
+            fs = json.loads(fs)
+        except Exception:
+            fs = {}
+    data["factors"] = fs.get("factors", {})
+    data["factor_contributions"] = fs.get("factor_contributions", {})
     # 附当前宽度快照，便于判断预测解释是否陈旧
     breadth = await db.fetch_one("""
         SELECT up_count, down_count, limit_up, limit_down,
@@ -251,4 +262,33 @@ async def plugin_verify():
         "indices": [_row(r) for r in indices],
         "market_amount": _jsonable(dict(amount)) if amount else {"total_amount": 0, "stocks": 0},
         "sample_stocks": [_row(r) for r in samples],
+    }, **(await _data_meta()))
+
+
+# ────────── 8. 历史时间序列 ──────────
+@router.get("/plugin/series")
+async def plugin_series(metric: str = "sentiment", days: int = 30):
+    """历史时间序列（情绪/宽度），用于回测与因子检验。metric: sentiment|breadth"""
+    if metric not in ("sentiment", "breadth"):
+        metric = "sentiment"
+    days = max(1, min(days, 365))
+    if metric == "sentiment":
+        rows = await db.fetch_all("""
+            SELECT scope, score, label, snapshot_time::text AS t
+            FROM sentiment_snapshot
+            WHERE snapshot_time >= NOW() - ($1 * INTERVAL '1 day')
+            ORDER BY snapshot_time
+        """, days)
+    else:
+        rows = await db.fetch_all("""
+            SELECT up_count, down_count, flat_count, limit_up, limit_down,
+                   sentiment_score, snapshot_time::text AS t
+            FROM market_breadth
+            WHERE snapshot_time >= NOW() - ($1 * INTERVAL '1 day')
+            ORDER BY snapshot_time
+        """, days)
+    return APIResponse.success({
+        "metric": metric,
+        "days": days,
+        "points": [_row(r) for r in rows],
     }, **(await _data_meta()))

@@ -121,6 +121,15 @@ async def predict_next_session() -> dict:
 
     confidence = round(0.5 + abs(raw_score - 0.5) * 0.3, 4)
 
+    # 各因子边际贡献 (weight × normalized)，便于拆解概率来源
+    factor_contributions = {
+        "ashare_sentiment": round(weights[0] * norm_sentiment, 4),
+        "volume_ratio": round(weights[1] * norm_vol, 4),
+        "global_risk": round(weights[2] * norm_global, 4),
+        "fund_direction": round(weights[3] * norm_fund, 4),
+        "limit_ratio": round(weights[4] * norm_limit, 4),
+        "index_change": round(weights[5] * norm_index, 4),
+    }
     result = {
         "horizon": "next_session",
         "up_probability": up_prob,
@@ -128,6 +137,7 @@ async def predict_next_session() -> dict:
         "down_probability": down_prob,
         "confidence": confidence,
         "factors": factors,
+        "factor_contributions": factor_contributions,
         "explanation": explanations,
         "model_version": "rule-baseline-v1",
         "generated_at": now,
@@ -229,7 +239,10 @@ async def _store_prediction(result: dict):
         "ashare_index", result["horizon"],
         result["up_probability"], result["flat_probability"],
         result["down_probability"], result["confidence"],
-        json.dumps(result.get("factors", {}), ensure_ascii=False),
+        json.dumps({
+            "factors": result.get("factors", {}),
+            "factor_contributions": result.get("factor_contributions", {}),
+        }, ensure_ascii=False),
         json.dumps(result.get("explanation", []), ensure_ascii=False),
         result["model_version"], result["generated_at"],
     )

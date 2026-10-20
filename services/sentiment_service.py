@@ -69,13 +69,15 @@ async def compute_ashare_sentiment() -> dict:
         limit_score = 20
     factors["涨跌停强度"] = _factor(limit_up, limit_score, 15)
 
-    # 3. 连板晋级率 (权重 15%)
+    # 3. 连板晋级率 (权重 15%)；无数据时权重降为 0（不参与加权）
     ladder = await _get_ladder_data()
     ladder_score = _calc_ladder_score(ladder)
-    ladder_factor = _factor(len(ladder), ladder_score, 15)
+    ladder_weight = 15 if ladder else 0
+    ladder_factor = _factor(len(ladder), ladder_score, ladder_weight)
     if not ladder:
         ladder_factor["no_data"] = True
-        ladder_factor["note"] = "连板梯队为空（无数据或非交易时段）"
+        ladder_factor["weight_applied"] = 0
+        ladder_factor["note"] = "连板梯队为空（无数据或非交易时段），权重暂降为 0"
     factors["连板晋级"] = ladder_factor
 
     # 4. 成交量能 (权重 15%)
@@ -99,8 +101,9 @@ async def compute_ashare_sentiment() -> dict:
     news_score, news_raw = await _calc_news_sentiment()
     factors["新闻情绪"] = _factor(news_raw, news_score, 7)
 
-    # 加权求和
-    total_score = sum(f["normalized"] * f["weight"] / 100 for f in factors.values())
+    # 加权求和（用实际权重和归一化，支持某因子权重为 0）
+    total_weight = sum(f["weight"] for f in factors.values())
+    total_score = sum(f["normalized"] * f["weight"] for f in factors.values()) / max(total_weight, 1)
     total_score = max(5, min(95, int(total_score)))
 
     label = _score_label(total_score)
@@ -147,24 +150,24 @@ async def compute_global_sentiment() -> dict:
     now = datetime.now()
 
     # 1. 全球股票指数风险偏好 (权重 25%)
-    global_index_score = await _calc_global_index_risk()
-    factors["全球股指"] = _factor(None, global_index_score, 25)
+    global_index_score, global_index_raw = await _calc_global_index_risk()
+    factors["全球股指"] = _factor(global_index_raw, global_index_score, 25)
 
     # 2. VIX 反向分 (权重 20%)
-    vix_score = await _calc_vix_score()
-    factors["VIX恐慌"] = _factor(None, vix_score, 20)
+    vix_score, vix_raw = await _calc_vix_score()
+    factors["VIX恐慌"] = _factor(vix_raw, vix_score, 20)
 
     # 3. 美元强弱反向 (权重 15%)
-    dollar_score = await _calc_dollar_score()
-    factors["美元指数"] = _factor(None, dollar_score, 15)
+    dollar_score, dollar_raw = await _calc_dollar_score()
+    factors["美元指数"] = _factor(dollar_raw, dollar_score, 15)
 
     # 4. 黄金避险反向 (权重 10%)
-    gold_score = await _calc_gold_score()
-    factors["黄金避险"] = _factor(None, gold_score, 10)
+    gold_score, gold_raw = await _calc_gold_score()
+    factors["黄金避险"] = _factor(gold_raw, gold_score, 10)
 
     # 5. 原油/铜增长预期 (权重 10%)
-    commodity_score = await _calc_commodity_score()
-    factors["商品预期"] = _factor(None, commodity_score, 10)
+    commodity_score, commodity_raw = await _calc_commodity_score()
+    factors["商品预期"] = _factor(commodity_raw, commodity_score, 10)
 
     # 6. 全球新闻情绪 (权重 20%)
     global_news_score = 50  # 暂时中性
@@ -324,73 +327,77 @@ async def _calc_news_sentiment() -> tuple[int, float | None]:
 
 # ────────── 全球情绪子因子 ──────────
 
-async def _calc_global_index_risk() -> int:
-    """全球主要指数涨跌比例"""
+async def _calc_global_index_risk() -> tuple[int, float | None]:
+    """全球主要指数涨跌比例（采集器把 market 写成 symbol 后缀：DJIA/HSI/N225/NDX/SPX）→ (score, 上涨占比)"""
     rows = await db.fetch_all("""
         SELECT change_pct FROM market_quote_snapshot
-        WHERE asset_type = 'index' AND market IN ('US', 'HK', 'JP', 'EU')
+        WHERE asset_type = 'index'
+          AND (symbol LIKE '100.%' OR market IN ('DJIA','HSI','N225','NDX','SPX'))
     """)
     if not rows:
-        return 50
+        return 50, None
     up = sum(1 for r in rows if (r.get("change_pct") or 0) > 0)
-    return max(0, min(100, int(up / len(rows) * 100)))
+    ratio = up / len(rows)
+    return max(0, min(100, int(ratio * 100))), round(ratio, 4)
 
 
-async def _calc_vix_score() -> int:
-    """VIX 反向映射: VIX越高 → 分数越低"""
+async def _calc_vix_score() -> tuple[int, float | None]:
+    """VIX 反向映射 → (score, VIX 点位)"""
     row = await db.fetch_one("""
-        SELECT close FROM latest_global_indices
-        WHERE index_code ILIKE '%VIX%' LIMIT 1
+        SELECT price FROM market_quote_snapshot
+        WHERE (symbol ILIKE '%VIX%' OR name ILIKE '%VIX%') AND asset_type = 'index'
+        ORDER BY quote_time DESC LIMIT 1
     """)
     if not row:
-        return 50
-    vix = float(row.get("close") or 20)
+        return 50, None
+    vix = float(row.get("price") or 20)
     # VIX 10-15=极度乐观, 15-20=正常, 20-30=担忧, >30=恐慌
-    if vix < 12: return 90
-    if vix < 15: return 75
-    if vix < 20: return 60
-    if vix < 25: return 40
-    if vix < 30: return 25
-    return 10
+    if vix < 12: return 90, round(vix, 2)
+    if vix < 15: return 75, round(vix, 2)
+    if vix < 20: return 60, round(vix, 2)
+    if vix < 25: return 40, round(vix, 2)
+    if vix < 30: return 25, round(vix, 2)
+    return 10, round(vix, 2)
 
 
-async def _calc_dollar_score() -> int:
-    """美元强 → 新兴市场压力 → 分数低 (反向)"""
+async def _calc_dollar_score() -> tuple[int, float | None]:
+    """美元强 → 新兴市场压力 → 分数低 (反向) → (score, 美元涨跌幅%)"""
     row = await db.fetch_one("""
         SELECT change_pct FROM market_quote_snapshot
-        WHERE symbol ILIKE '%USD%CNH%' OR symbol = 'USDCNH.F'
-        LIMIT 1
+        WHERE symbol = '100.UDI' OR symbol ILIKE '%USDCNH%' OR name ILIKE '%美元%'
+        ORDER BY quote_time DESC LIMIT 1
     """)
     if not row:
-        return 50
+        return 50, None
     chg = float(row.get("change_pct") or 0)
     # 美元涨 → 反向分低
-    return max(10, min(90, int(50 - chg * 10)))
+    return max(10, min(90, int(50 - chg * 10))), round(chg, 4)
 
 
-async def _calc_gold_score() -> int:
-    """黄金涨 → 避险情绪 → 分数低 (反向)"""
+async def _calc_gold_score() -> tuple[int, float | None]:
+    """黄金涨 → 避险情绪 → 分数低 (反向) → (score, 黄金涨跌幅%)"""
     row = await db.fetch_one("""
         SELECT change_pct FROM market_quote_snapshot
         WHERE symbol ILIKE '%GC%' OR symbol ILIKE '%gold%' OR name ILIKE '%黄金%'
-        LIMIT 1
+        ORDER BY quote_time DESC LIMIT 1
     """)
     if not row:
-        return 50
+        return 50, None
     chg = float(row.get("change_pct") or 0)
-    return max(10, min(90, int(50 - chg * 5)))
+    return max(10, min(90, int(50 - chg * 5))), round(chg, 4)
 
 
-async def _calc_commodity_score() -> int:
-    """原油/铜涨 → 经济增长预期 → 分数高"""
+async def _calc_commodity_score() -> tuple[int, float | None]:
+    """原油/铜涨 → 经济增长预期 → 分数高 → (score, 平均涨跌幅%)"""
     rows = await db.fetch_all("""
         SELECT change_pct FROM market_quote_snapshot
         WHERE symbol IN ('CL.F', 'HG.F') OR name IN ('WTI原油', '铜')
+          OR symbol LIKE '101.%'
     """)
     if not rows:
-        return 50
+        return 50, None
     avg_chg = sum(float(r.get("change_pct") or 0) for r in rows) / len(rows)
-    return max(10, min(90, int(50 + avg_chg * 5)))
+    return max(10, min(90, int(50 + avg_chg * 5))), round(avg_chg, 4)
 
 
 # ────────── 持久化 ──────────

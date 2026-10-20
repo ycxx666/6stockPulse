@@ -69,6 +69,34 @@ async def check_freshness() -> list[dict]:
     return out
 
 
+async def check_anomalies() -> list[dict]:
+    """异常跳变检测：板块涨跌幅 >20%、单只主力资金 >100 亿"""
+    out = []
+    try:
+        rows = await db.fetch_all("""
+            SELECT sector_name, change_pct FROM v_sector_top
+            WHERE ABS(change_pct) > 20 LIMIT 10
+        """)
+        for r in rows:
+            out.append({"type": "sector_jump",
+                        "detail": f"{r['sector_name']} 涨跌幅 {float(r['change_pct']):.2f}%"})
+    except Exception:
+        pass
+    try:
+        rows = await db.fetch_all("""
+            SELECT stock_code, main_net_inflow / 1e8 AS yi
+            FROM fund_flow
+            WHERE trade_date = CURRENT_DATE AND ABS(main_net_inflow) > 100e8
+            ORDER BY ABS(main_net_inflow) DESC LIMIT 10
+        """)
+        for r in rows:
+            out.append({"type": "fund_jump",
+                        "detail": f"{r['stock_code']} 主力净流入 {float(r['yi']):.1f} 亿"})
+    except Exception:
+        pass
+    return out
+
+
 async def main():
     await db.init_pool()
     try:
@@ -82,6 +110,13 @@ async def main():
         print("=== 时间戳新鲜度 ===")
         for f in freshness:
             print(f"  {f['table']}: age={f['age_seconds']}s stale={f['stale']}")
+        anomalies = await check_anomalies()
+        print("=== 异常跳变检测 ===")
+        if anomalies:
+            for a in anomalies:
+                print(f"  [{a['type']}] {a['detail']}")
+        else:
+            print("  无异常")
     finally:
         await db.close_pool()
 
