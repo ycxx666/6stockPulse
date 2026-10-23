@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 from docx import Document
-from docx.enum.text import WD_LINE_SPACING
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt
 
@@ -126,6 +126,24 @@ def main():
             for r in p.runs:
                 r.font.italic = True
             p.paragraph_format.left_indent = Cm(1)
+            i += 1
+            continue
+
+        # 图片
+        m = re.match(r"^!\[([^\]]*)\]\(([^)]+)\)$", s)
+        if m:
+            alt, rel = m.group(1), m.group(2)
+            img_path = (MD.parent / rel).resolve()
+            if img_path.exists():
+                doc.add_picture(str(img_path), width=Cm(15))
+                doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                if alt:
+                    p = doc.add_paragraph()
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    r = p.add_run(alt)
+                    set_font(r, "宋体", 10.5)
+            else:
+                add_rich(doc, f"[图片缺失: {rel}]", 10.5)
             i += 1
             continue
 
